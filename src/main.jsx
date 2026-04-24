@@ -1,5 +1,7 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { createRoot } from "react-dom/client";
+import { GeoJSON, MapContainer, TileLayer } from "react-leaflet";
+import * as ss from "simple-statistics";
 import {
   BookOpen,
   CheckCircle2,
@@ -13,53 +15,98 @@ import {
   Route,
   SlidersHorizontal,
 } from "lucide-react";
+import "leaflet/dist/leaflet.css";
 import geojsonText from "./data/glasgow-learning-districts.geojson?raw";
 import "./style.css";
 
-const geojson = JSON.parse(geojsonText);
+const fallbackGeojson = JSON.parse(geojsonText);
 
 const palettes = {
-  Praxis: ["#eef6f4", "#b9d8cf", "#72afa7", "#2f7f86", "#173d4c"],
-  Civic: ["#f7f3e8", "#dfc37d", "#ba8f3a", "#7d6757", "#2c3432"],
-  Viridis: ["#440154", "#3b528b", "#21918c", "#5ec962", "#fde725"],
-  Mono: ["#f5f7f8", "#d8dee2", "#9aa6ad", "#56636a", "#1f2933"],
+  Blues: {
+    type: "Sequential",
+    note: "Good for ordered values where higher scores should read as stronger intensity.",
+    colors: ["#eff6ff", "#bfdbfe", "#60a5fa", "#2563eb", "#1e3a8a"],
+  },
+  Greens: {
+    type: "Sequential",
+    note: "Useful for environmental or access variables when the data increase in one direction.",
+    colors: ["#f0fdf4", "#bbf7d0", "#4ade80", "#16a34a", "#14532d"],
+  },
+  Purples: {
+    type: "Sequential",
+    note: "A compact ordered palette that can work well for density or pressure indicators.",
+    colors: ["#faf5ff", "#e9d5ff", "#c084fc", "#7e22ce", "#3b0764"],
+  },
+  Viridis: {
+    type: "Sequential",
+    note: "Perceptually ordered and broadly readable across many screens.",
+    colors: ["#440154", "#3b528b", "#21918c", "#5ec962", "#fde725"],
+  },
+  Cividis: {
+    type: "Accessibility-aware sequential",
+    note: "Designed to remain legible for many readers with colour-vision differences.",
+    colors: ["#00224e", "#414d6b", "#7c7b78", "#b8ad6d", "#fee838"],
+  },
+  "Blue-Orange diverging": {
+    type: "Diverging",
+    note: "Best when values are interpreted around a meaningful middle point.",
+    colors: ["#2166ac", "#92c5de", "#f7f7f7", "#f4a582", "#b2182b"],
+  },
+  "Purple-Green diverging": {
+    type: "Diverging",
+    note: "Useful for contrasting two sides of a balanced conceptual scale.",
+    colors: ["#762a83", "#af8dc3", "#f7f7f7", "#7fbf7b", "#1b7837"],
+  },
+  "Colour-blind-aware": {
+    type: "Accessibility-aware",
+    note: "A restrained palette selected for stronger separability under common colour-vision constraints.",
+    colors: ["#fef0d9", "#fdcc8a", "#fc8d59", "#d7301f", "#7f0000"],
+  },
 };
 
 const metrics = {
   accessibility: {
-    label: "Transit accessibility",
+    label: "Accessibility index",
     short: "Access",
     unit: "index score",
-    description: "A teaching index for access to public transport, services, and central destinations.",
-    prompt: "Where would a reader infer the strongest everyday accessibility, and why?",
-  },
-  density: {
-    label: "Urban intensity",
-    short: "Intensity",
-    unit: "index score",
-    description: "A proxy for built-form intensity, activity concentration, and mixed urban use.",
-    prompt: "Does the classification emphasise a compact core or a wider urban gradient?",
+    description: "An illustrative teaching variable for access to services, destinations, and everyday opportunities.",
+    prompt: "Where would a reader infer stronger accessibility, and how much does the classification support that reading?",
   },
   green: {
     label: "Green space access",
     short: "Green",
     unit: "index score",
-    description: "A simplified access measure for parks, open space, and environmental amenity.",
+    description: "An illustrative teaching variable for parks, open space, and environmental amenity.",
     prompt: "Which districts look comparatively underserved, and how confident is that reading?",
   },
-  uncertainty: {
-    label: "Interpretive uncertainty",
-    short: "Uncertainty",
+  housing: {
+    label: "Housing pressure",
+    short: "Housing",
     unit: "index score",
-    description: "A deliberate reminder that mapped values carry modelling and interpretation limits.",
-    prompt: "How should uncertainty change the claim made by the map title?",
+    description: "An illustrative teaching variable combining urban intensity and limited environmental amenity.",
+    prompt: "Which areas appear under stronger housing pressure, and what could be hidden by the chosen geography?",
   },
+  transit: {
+    label: "Transit intensity",
+    short: "Transit",
+    unit: "index score",
+    description: "An illustrative teaching variable for transport activity and centrality.",
+    prompt: "Does the map imply a compact core, a corridor pattern, or several local centres?",
+  },
+};
+
+const classificationMethods = {
+  "Equal interval": "Equal intervals preserve numeric distance, but sparse extreme values can dominate the apparent pattern.",
+  Quantile: "Quantiles put a similar number of areas in each class, which supports comparison but can exaggerate small differences.",
+  "Natural breaks / Jenks": "Jenks grouping follows clusters in the data, often producing intuitive classes but making comparisons less standardised.",
+  "Standard deviation": "Standard deviation classes show distance from the mean, which foregrounds unusual areas and central tendency.",
 };
 
 const pages = [
   ["home", "Home"],
   ["studio", "Studio"],
   ["tutorials", "Tutorials"],
+  ["concepts", "Concepts"],
   ["critique", "Critique"],
   ["featured", "Featured Graphics"],
   ["cases", "Case Studies"],
@@ -97,7 +144,10 @@ const tutorials = [
     title: "Map critique and cartographic design principles",
     summary:
       "Students read the Ordnance Survey cartographic design principles and apply lecture concepts to critique a map or geovisualisation.",
+    link: "https://proceedings.esri.com/library/userconf/proc13/papers/1015_20.pdf",
     tasks: [
+      "Read the Ordnance Survey cartographic design principles.",
+      "Apply lecture concepts and OS principles to critique a map or geovisualisation.",
       "Identify three things the map does very well.",
       "Identify three suggestions for improvement.",
       "Share and present the critique with the class.",
@@ -109,11 +159,43 @@ const tutorials = [
       "This tutorial introduces bivariate mapping and cartograms as advanced methods for visualising relationships and reshaping geographic representation.",
     tasks: [
       "Bivariate mapping: classify two variables into quantiles and assign colour combinations.",
+      "Use colour combinations to read where both variables are high, both are low, or the relationship is uneven.",
       "Cartograms: resize or distort geographic regions according to a selected variable such as population.",
       "Compare how a conventional population gradient map and a population cartogram change interpretation.",
     ],
     note:
       "The bivariate mapping activity explores the relationship between per-capita new construction area and per-capita demolition area in Greater London.",
+  },
+];
+
+const concepts = [
+  {
+    title: "Map communication",
+    text: "A map is a communication system. The cartographer selects information, turns objects or phenomena into symbols, and designs conditions for users to retrieve, compare, and interpret geographic information.",
+  },
+  {
+    title: "Visual perception",
+    text: "Map reading depends on detection, discrimination, and recognition: noticing marks, distinguishing differences, and connecting visual forms to meaningful geographic categories or patterns.",
+  },
+  {
+    title: "Visual thinking to visual communication",
+    text: "Visual work moves between exploration, confirmation, synthesis, and presentation. Early maps help analysts think; finished graphics help audiences understand a focused claim.",
+  },
+  {
+    title: "Geovisualisation",
+    text: "Geovisualisation combines visual exploration, analysis, synthesis, and presentation of geospatial data. It treats maps as tools for reasoning as well as communication.",
+  },
+  {
+    title: "Data type and structure",
+    text: "Design choices depend on whether data are categorical, numerical, temporal, networked, flowing, or topological. Data structure also matters: wide tables support comparison across fields, while long tables often support time series and grouped analysis.",
+  },
+  {
+    title: "Choosing visualisation by purpose",
+    text: "Distribution, composition, temporal change, network or flow, and combined visualisations each ask for different graphic strategies. The purpose should guide the visual form, not the reverse.",
+  },
+  {
+    title: "Interaction",
+    text: "Interactive maps extend visual reasoning through navigation, filtering, linking, and brushing. Interaction should reveal structure without forcing users to hunt for the main interpretation.",
   },
 ];
 
@@ -149,6 +231,12 @@ const caseStudies = [
     summary:
       "This featured graphic uses building footprint data to identify newly constructed and demolished buildings from 2017 to 2023 and visualises construction/demolition patterns through bivariate colour mapping.",
     doi: "10.1177/23998083251317573",
+    pdf: "/pdfs/construction-demolition-england-2025-epb.pdf",
+    prompts: [
+      "How does the bivariate palette encode construction and demolition at the same time?",
+      "Which places are visually framed as outliers, and why?",
+      "What does building footprint data reveal that an aggregate table would hide?",
+    ],
   },
   {
     title: "Scotland's twin referendums",
@@ -156,6 +244,12 @@ const caseStudies = [
     summary:
       "This regional graphic compares Scotland's 2014 independence referendum and 2016 EU referendum using a bivariate population-weighted cartogram, showing how national aggregates can hide regional political heterogeneity.",
     doi: "10.1080/21681376.2026.2637381",
+    pdf: "/pdfs/scotland-twin-referendums-2026-rsrs.pdf",
+    prompts: [
+      "How does the population-weighted cartogram change the perceived importance of regions?",
+      "Where do the two referendum geographies align or diverge?",
+      "What political interpretation would be harder to see on a conventional map?",
+    ],
   },
   {
     title: "An Academy of Nations?",
@@ -163,17 +257,101 @@ const caseStudies = [
     summary:
       "This featured graphic maps nominations and wins for the Academy Award for Best International Feature Film, using proportional symbols and colour intensity to reveal geographic imbalance and Eurocentrism.",
     doi: "10.1177/23998083251381497",
+    pdf: "/pdfs/academy-nations-2025-epb.pdf",
+    prompts: [
+      "How do proportional symbols and colour intensity divide attention?",
+      "What spatial imbalance becomes visible at global scale?",
+      "How does the graphic connect cultural geography with critique of representation?",
+    ],
   },
 ];
 
-function valuesFor(metric) {
-  return geojson.features.map((feature) => feature.properties[metric]);
+function deterministicScore(index, seed, min = 24, max = 96) {
+  const raw = Math.sin((index + 1) * seed) * 10000;
+  return Math.round(min + (raw - Math.floor(raw)) * (max - min));
 }
 
-function getBreaks(metric, classes, method) {
-  const vals = valuesFor(metric).slice().sort((a, b) => a - b);
+function numericValue(...values) {
+  const found = values.find((value) => Number.isFinite(Number(value)));
+  return found === undefined ? undefined : Number(found);
+}
+
+function getFeatureName(feature, index) {
+  const properties = feature.properties || {};
+  return (
+    properties._atlasName ||
+    properties.name ||
+    properties.Name ||
+    properties.WD13NM ||
+    properties.WD23NM ||
+    properties.ward_name ||
+    properties.WardName ||
+    `Area ${index + 1}`
+  );
+}
+
+function enrichFeature(feature, index, source) {
+  const properties = feature.properties || {};
+  const accessibility = numericValue(properties.accessibility, properties.Accessibility, deterministicScore(index, 3.11));
+  const green = numericValue(properties.green, properties.Green, deterministicScore(index, 5.37));
+  const transit = numericValue(properties.transit, properties.Transit, properties.density, deterministicScore(index, 7.19));
+  const housing = numericValue(
+    properties.housing,
+    properties.Housing,
+    Math.round(transit * 0.58 + (100 - green) * 0.42)
+  );
+
+  return {
+    ...feature,
+    properties: {
+      ...properties,
+      _atlasId: properties._atlasId || properties.id || properties.ID || `atlas-${source}-${index}`,
+      _atlasName: getFeatureName(feature, index),
+      _atlasLayerSource: source,
+      accessibility,
+      green,
+      housing,
+      transit,
+    },
+  };
+}
+
+function prepareStudioGeojson(collection, source) {
+  return {
+    ...collection,
+    features: (collection.features || []).map((feature, index) => enrichFeature(feature, index, source)),
+  };
+}
+
+const fallbackStudioGeojson = prepareStudioGeojson(fallbackGeojson, "fallback");
+
+function valuesFor(collection, metric) {
+  return collection.features.map((feature) => Number(feature.properties[metric])).filter(Number.isFinite);
+}
+
+function standardDeviationBreaks(vals, classes) {
+  const sorted = vals.slice().sort((a, b) => a - b);
+  const min = sorted[0];
+  const max = sorted[sorted.length - 1];
+  const mean = ss.mean(sorted);
+  const sd = ss.standardDeviation(sorted) || 1;
+  const offsets = {
+    3: [-0.5, 0.5],
+    4: [-1, 0, 1],
+    5: [-1.5, -0.5, 0.5, 1.5],
+  }[classes];
+  const thresholds = offsets.map((offset) => Math.max(min, Math.min(max, mean + offset * sd))).sort((a, b) => a - b);
+  return [...thresholds, max];
+}
+
+function getBreaks(collection, metric, classes, method) {
+  const vals = valuesFor(collection, metric).slice().sort((a, b) => a - b);
   const min = vals[0];
   const max = vals[vals.length - 1];
+
+  if (!vals.length) {
+    return Array.from({ length: classes }, () => 0);
+  }
 
   if (max === min) {
     return Array.from({ length: classes }, () => max);
@@ -186,6 +364,20 @@ function getBreaks(metric, classes, method) {
     });
   }
 
+  if (method === "Natural breaks / Jenks") {
+    try {
+      const breaks = ss.jenks(vals, Math.min(classes, vals.length));
+      const upperBreaks = breaks.slice(1);
+      return upperBreaks.length === classes ? upperBreaks : getBreaks(collection, metric, classes, "Equal interval");
+    } catch {
+      return getBreaks(collection, metric, classes, "Equal interval");
+    }
+  }
+
+  if (method === "Standard deviation") {
+    return standardDeviationBreaks(vals, classes);
+  }
+
   const width = (max - min) / classes;
   return Array.from({ length: classes }, (_, index) => min + width * (index + 1));
 }
@@ -196,7 +388,7 @@ function classify(value, breaks) {
 }
 
 function getFill(value, breaks, paletteName) {
-  const palette = palettes[paletteName];
+  const palette = palettes[paletteName].colors;
   const idx = classify(value, breaks);
   const scaledIndex = Math.round((idx / Math.max(1, breaks.length - 1)) * (palette.length - 1));
   return palette[scaledIndex];
@@ -206,17 +398,17 @@ function formatNumber(value) {
   return Number.isInteger(value) ? String(value) : value.toFixed(1);
 }
 
-function buildLegend(metric, classes, method, paletteName) {
-  const vals = valuesFor(metric);
+function buildLegend(collection, metric, classes, method, paletteName) {
+  const vals = valuesFor(collection, metric);
   const sorted = vals.slice().sort((a, b) => a - b);
   const min = sorted[0];
-  const breaks = getBreaks(metric, classes, method);
-  const palette = palettes[paletteName];
+  const breaks = getBreaks(collection, metric, classes, method);
+  const palette = palettes[paletteName].colors;
 
   return breaks.map((upper, index) => {
     const lower = index === 0 ? min : breaks[index - 1];
     const colorIndex = Math.round((index / Math.max(1, classes - 1)) * (palette.length - 1));
-    const count = geojson.features.filter((feature) => classify(feature.properties[metric], breaks) === index).length;
+    const count = collection.features.filter((feature) => classify(feature.properties[metric], breaks) === index).length;
     return {
       color: palette[colorIndex],
       count,
@@ -225,33 +417,9 @@ function buildLegend(metric, classes, method, paletteName) {
   });
 }
 
-function metricExtent(metric) {
-  const vals = valuesFor(metric);
+function metricExtent(collection, metric) {
+  const vals = valuesFor(collection, metric);
   return [Math.min(...vals), Math.max(...vals)];
-}
-
-function project([lon, lat]) {
-  const minLon = -4.36;
-  const maxLon = -4.16;
-  const minLat = 55.82;
-  const maxLat = 55.91;
-  const x = ((lon - minLon) / (maxLon - minLon)) * 700 + 30;
-  const y = 420 - ((lat - minLat) / (maxLat - minLat)) * 360;
-  return [x, y];
-}
-
-function polygonToPoints(coords) {
-  return coords[0]
-    .map((pt) => project(pt))
-    .map(([x, y]) => `${x.toFixed(1)},${y.toFixed(1)}`)
-    .join(" ");
-}
-
-function centroidFor(feature) {
-  const projected = feature.geometry.coordinates[0].map((pt) => project(pt));
-  return projected
-    .reduce((acc, pt) => [acc[0] + pt[0], acc[1] + pt[1]], [0, 0])
-    .map((value) => value / projected.length);
 }
 
 function Header({ active, setActive }) {
@@ -395,30 +563,130 @@ function SegmentedControl({ label, value, options, onChange, renderOption }) {
   );
 }
 
+function escapeHtml(value) {
+  return String(value).replace(/[&<>"']/g, (char) => (
+    {
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#39;",
+    }[char]
+  ));
+}
+
 function Studio() {
   const [metric, setMetric] = useState("accessibility");
-  const [palette, setPalette] = useState("Praxis");
+  const [palette, setPalette] = useState("Blues");
   const [method, setMethod] = useState("Equal interval");
   const [classes, setClasses] = useState(5);
   const [opacity, setOpacity] = useState(0.88);
   const [labels, setLabels] = useState(true);
   const [selected, setSelected] = useState("centre");
   const [hovered, setHovered] = useState(null);
+  const [studioGeojson, setStudioGeojson] = useState(fallbackStudioGeojson);
+  const [layerStatus, setLayerStatus] = useState("Fallback teaching layer");
 
-  const breaks = useMemo(() => getBreaks(metric, Number(classes), method), [metric, classes, method]);
-  const legend = useMemo(() => buildLegend(metric, Number(classes), method, palette), [metric, classes, method, palette]);
-  const activeFeature = useMemo(
-    () => geojson.features.find((feature) => feature.properties.id === (hovered || selected)) || geojson.features[0],
-    [hovered, selected]
+  useEffect(() => {
+    let ignore = false;
+
+    fetch("/data/glasgow-wards.geojson")
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Glasgow ward GeoJSON not available");
+        }
+        return response.json();
+      })
+      .then((data) => {
+        if (!ignore && data?.features?.length) {
+          const prepared = prepareStudioGeojson(data, "glasgow-wards");
+          setStudioGeojson(prepared);
+          setLayerStatus("Glasgow ward boundary layer");
+          setSelected(prepared.features[0].properties._atlasId);
+        }
+      })
+      .catch(() => {
+        if (!ignore) {
+          setStudioGeojson(fallbackStudioGeojson);
+          setLayerStatus("Fallback teaching layer");
+        }
+      });
+
+    return () => {
+      ignore = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!studioGeojson.features.some((feature) => feature.properties._atlasId === selected)) {
+      setSelected(studioGeojson.features[0]?.properties._atlasId || "");
+    }
+  }, [selected, studioGeojson]);
+
+  const breaks = useMemo(
+    () => getBreaks(studioGeojson, metric, Number(classes), method),
+    [studioGeojson, metric, classes, method]
   );
-  const [minValue, maxValue] = metricExtent(metric);
+  const legend = useMemo(
+    () => buildLegend(studioGeojson, metric, Number(classes), method, palette),
+    [studioGeojson, metric, classes, method, palette]
+  );
+  const activeFeature = useMemo(
+    () =>
+      studioGeojson.features.find((feature) => feature.properties._atlasId === (hovered || selected)) ||
+      studioGeojson.features[0],
+    [studioGeojson, hovered, selected]
+  );
+  const [minValue, maxValue] = metricExtent(studioGeojson, metric);
   const activeValue = activeFeature.properties[metric];
   const activeClass = classify(activeValue, breaks) + 1;
+  const layerKey = `${layerStatus}-${metric}-${palette}-${method}-${classes}-${opacity}-${labels}`;
+  const layerNote =
+    layerStatus === "Fallback teaching layer"
+      ? "No public Glasgow ward GeoJSON was found at /data/glasgow-wards.geojson, so the Studio is using synthetic learning districts as a fallback teaching layer."
+      : "The Studio is using the public Glasgow ward GeoJSON supplied in /data/glasgow-wards.geojson with illustrative teaching variables.";
 
-  const methodNote =
-    method === "Quantile"
-      ? "Quantile classes balance district counts. Useful for comparison, but it can exaggerate small numeric differences."
-      : "Equal intervals preserve numeric distance. Useful for scale reading, but sparse extremes may dominate the visual pattern.";
+  const styleFeature = (feature) => {
+    const id = feature.properties._atlasId;
+    const isSelected = selected === id;
+    const isHovered = hovered === id;
+
+    return {
+      color: isSelected || isHovered ? "#1f2933" : "#ffffff",
+      fillColor: getFill(Number(feature.properties[metric]), breaks, palette),
+      fillOpacity: opacity,
+      opacity: 1,
+      weight: isSelected ? 4 : isHovered ? 3 : 1.5,
+    };
+  };
+
+  const bindFeature = (feature, layer) => {
+    const properties = feature.properties;
+    const id = properties._atlasId;
+    const name = properties._atlasName;
+    const value = properties[metric];
+
+    layer.on({
+      click: () => setSelected(id),
+      mouseover: () => {
+        setHovered(id);
+        layer.bringToFront?.();
+      },
+      mouseout: () => setHovered(null),
+    });
+
+    layer.bindPopup(
+      `<strong>${escapeHtml(name)}</strong><br>${escapeHtml(metrics[metric].label)}: ${escapeHtml(value)} / 100`
+    );
+
+    if (labels) {
+      layer.bindTooltip(escapeHtml(name), {
+        className: "district-tooltip",
+        direction: "center",
+        permanent: true,
+      });
+    }
+  };
 
   return (
     <main className="page studio-layout">
@@ -429,51 +697,23 @@ function Studio() {
             <h2 id="studio-heading">{metrics[metric].label}</h2>
             <p className="panel-copy">{metrics[metric].description}</p>
           </div>
-          <span className="pill">Static Vite map</span>
+          <span className="pill">Leaflet + OpenStreetMap</span>
         </div>
 
-        <svg viewBox="0 0 780 460" className="map-svg" role="img" aria-label="Interactive choropleth map of Glasgow learning districts">
-          <rect x="0" y="0" width="780" height="460" className="map-bg" />
-          <path d="M42 332 C 150 284, 232 312, 344 270 S 560 216, 725 118" className="river" />
-          <text x="46" y="54" className="map-context-label">Glasgow teaching geography, sample teaching data</text>
-          {geojson.features.map((feature) => {
-            const p = feature.properties;
-            const isSelected = selected === p.id;
-            const isHovered = hovered === p.id;
-            const fill = getFill(p[metric], breaks, palette);
-            const centroid = centroidFor(feature);
-            return (
-              <g key={p.id}>
-                <polygon
-                  points={polygonToPoints(feature.geometry.coordinates)}
-                  fill={fill}
-                  opacity={opacity}
-                  className={isSelected ? "district selected" : isHovered ? "district hovered" : "district"}
-                  onClick={() => setSelected(p.id)}
-                  onPointerEnter={() => setHovered(p.id)}
-                  onPointerLeave={() => setHovered(null)}
-                  onFocus={() => setHovered(p.id)}
-                  onBlur={() => setHovered(null)}
-                  onKeyDown={(event) => {
-                    if (event.key === "Enter" || event.key === " ") {
-                      event.preventDefault();
-                      setSelected(p.id);
-                    }
-                  }}
-                  role="button"
-                  tabIndex="0"
-                  aria-label={`${p.name}: ${metrics[metric].label} ${p[metric]} out of 100`}
-                />
-                <title>{`${p.name}: ${p[metric]} / 100`}</title>
-                {labels && (
-                  <text x={centroid[0]} y={centroid[1]} className="map-label">
-                    {p.short}
-                  </text>
-                )}
-              </g>
-            );
-          })}
-        </svg>
+        <div className="map-status-row">
+          <span className="pill muted-pill">{layerStatus}</span>
+          <span>Illustrative teaching variables, not operational city indicators.</span>
+        </div>
+
+        <div className="leaflet-shell" aria-label="Interactive Leaflet choropleth map centred on Glasgow">
+          <MapContainer center={[55.8642, -4.2518]} zoom={11} scrollWheelZoom className="leaflet-map">
+            <TileLayer
+              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>'
+              url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+            />
+            <GeoJSON key={layerKey} data={studioGeojson} style={styleFeature} onEachFeature={bindFeature} />
+          </MapContainer>
+        </div>
 
         <div className="studio-bottom-grid">
           <section className="legend-panel" aria-label="Choropleth legend">
@@ -492,11 +732,12 @@ function Studio() {
 
           <section className="reading-panel" aria-label="Selected district reading">
             <p className="eyebrow">Current reading</p>
-            <h3>{activeFeature.properties.name}</h3>
+            <h3>{activeFeature.properties._atlasName}</h3>
             <p>
               {activeValue} / 100, class {activeClass} of {classes}. Dataset range: {minValue}-{maxValue}.
             </p>
             <p className="prompt-text">{metrics[metric].prompt}</p>
+            <p>{layerNote}</p>
           </section>
         </div>
       </section>
@@ -508,7 +749,7 @@ function Studio() {
         </div>
 
         <SegmentedControl
-          label="Mapped variable"
+          label="Illustrative teaching variable"
           value={metric}
           onChange={setMetric}
           options={Object.entries(metrics).map(([value, config]) => ({ value, label: config.short }))}
@@ -523,7 +764,7 @@ function Studio() {
             <>
               <span>{name}</span>
               <span className="palette-strip" aria-hidden="true">
-                {palettes[name].map((color) => (
+                {palettes[name].colors.map((color) => (
                   <span key={color} style={{ background: color }} />
                 ))}
               </span>
@@ -535,7 +776,7 @@ function Studio() {
           label="Classification"
           value={method}
           onChange={setMethod}
-          options={["Equal interval", "Quantile"]}
+          options={Object.keys(classificationMethods)}
         />
 
         <label className="range-control">
@@ -562,7 +803,12 @@ function Studio() {
 
         <div className="method-note">
           <strong>Classification note</strong>
-          <p>{methodNote}</p>
+          <p>{classificationMethods[method]}</p>
+        </div>
+
+        <div className="method-note">
+          <strong>{palettes[palette].type} palette</strong>
+          <p>{palettes[palette].note}</p>
         </div>
 
         <div className="reflection-box">
@@ -597,6 +843,31 @@ function Tutorials() {
               ))}
             </ul>
             {tutorial.note && <p className="note-text">{tutorial.note}</p>}
+            {tutorial.link && (
+              <a className="inline-link" href={tutorial.link} target="_blank" rel="noreferrer">
+                Read the OS principles <ExternalLink size={15} aria-hidden="true" />
+              </a>
+            )}
+          </article>
+        ))}
+      </section>
+    </main>
+  );
+}
+
+function Concepts() {
+  return (
+    <main className="page">
+      <SectionHeader
+        eyebrow="Concepts"
+        title="Core ideas for map use and geovisualisation."
+        text="These concise concept blocks distil lecture themes into public teaching text for classroom discussion and independent revision."
+      />
+      <section className="concept-grid" aria-label="Map use and geovisualisation concepts">
+        {concepts.map((concept) => (
+          <article className="concept-card" key={concept.title}>
+            <h3>{concept.title}</h3>
+            <p>{concept.text}</p>
           </article>
         ))}
       </section>
@@ -671,6 +942,14 @@ function FeaturedGraphics() {
         </aside>
       </section>
 
+      <section className="section-block publication-panel">
+        <SectionHeader
+          eyebrow="Publication model"
+          title="A concise format for visual explanation."
+          text="In Environment and Planning B, Featured Graphics are reviewed by the Graphics Editor and commonly centre on one graphic, a short commentary of about 400 words, and a brief reference list. Atlas Praxis uses this publication format as a teaching model: students move from exploratory mapping to concise, publication-style visual explanation."
+        />
+      </section>
+
       <section className="section-block">
         <SectionHeader
           eyebrow="Teaching framework"
@@ -705,9 +984,22 @@ function CaseStudies() {
             <h3>{study.title}</h3>
             <p className="theme-text">{study.theme}</p>
             <p>{study.summary}</p>
-            <a href={`https://doi.org/${study.doi}`} target="_blank" rel="noreferrer">
-              DOI: {study.doi} <ExternalLink size={15} aria-hidden="true" />
-            </a>
+            <div className="case-actions">
+              <a href={`https://doi.org/${study.doi}`} target="_blank" rel="noreferrer">
+                DOI: {study.doi} <ExternalLink size={15} aria-hidden="true" />
+              </a>
+              <a className="pdf-button" href={study.pdf} target="_blank" rel="noreferrer">
+                Open PDF <ExternalLink size={15} aria-hidden="true" />
+              </a>
+            </div>
+            <div className="reading-prompts">
+              <strong>How to read this graphic</strong>
+              <ul>
+                {study.prompts.map((prompt) => (
+                  <li key={prompt}>{prompt}</li>
+                ))}
+              </ul>
+            </div>
           </article>
         ))}
       </section>
@@ -754,6 +1046,7 @@ function App() {
       {active === "home" && <Home setActive={setActive} />}
       {active === "studio" && <Studio />}
       {active === "tutorials" && <Tutorials />}
+      {active === "concepts" && <Concepts />}
       {active === "critique" && <Critique />}
       {active === "featured" && <FeaturedGraphics />}
       {active === "cases" && <CaseStudies />}

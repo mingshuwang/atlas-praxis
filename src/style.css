@@ -185,8 +185,10 @@ input:focus-visible,
 .pathway-card,
 .activity-card,
 .tutorial-card,
+.concept-card,
 .framework-card,
 .case-card,
+.publication-panel,
 .course-band {
   background: rgba(255, 255, 255, 0.96);
   border: 1px solid var(--line);
@@ -290,6 +292,7 @@ p {
 
 .pathway-grid,
 .activity-grid,
+.concept-grid,
 .framework-grid,
 .case-grid {
   display: grid;
@@ -307,6 +310,10 @@ p {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
+.concept-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
 .framework-grid {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
@@ -314,8 +321,10 @@ p {
 .pathway-card,
 .activity-card,
 .tutorial-card,
+.concept-card,
 .framework-card,
-.case-card {
+.case-card,
+.publication-panel {
   padding: 18px;
 }
 
@@ -353,6 +362,12 @@ p {
   color: #354453;
 }
 
+.concept-card p,
+.framework-card p,
+.case-card p {
+  margin-bottom: 0;
+}
+
 .tutorial-card li + li {
   margin-top: 8px;
 }
@@ -374,23 +389,59 @@ p {
   font-weight: 700;
 }
 
-.theme-text {
-  color: var(--accent-dark);
-  font-weight: 800;
-}
-
+.inline-link,
 .case-card a {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  margin-top: 12px;
   color: var(--accent-dark);
   font-weight: 900;
   text-decoration: none;
 }
 
+.inline-link {
+  margin-top: 16px;
+}
+
+.inline-link:hover,
 .case-card a:hover {
   text-decoration: underline;
+}
+
+.theme-text {
+  color: var(--accent-dark);
+  font-weight: 800;
+  margin-bottom: 12px !important;
+}
+
+.case-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.pdf-button {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 7px 9px;
+  background: #f8faf9;
+}
+
+.reading-prompts {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+
+.reading-prompts ul {
+  margin: 8px 0 0;
+  padding-left: 18px;
+  color: #354453;
+}
+
+.reading-prompts li + li {
+  margin-top: 7px;
 }
 
 .course-band {
@@ -455,6 +506,53 @@ p {
   border: 1px solid var(--line);
   border-radius: var(--radius);
   background: #f8faf9;
+}
+
+.map-status-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  margin-top: 16px;
+  color: var(--muted);
+  font-size: 0.93rem;
+}
+
+.muted-pill {
+  background: #f8faf9;
+  border: 1px solid var(--line);
+}
+
+.leaflet-shell {
+  min-height: 520px;
+  margin-top: 12px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: #dce8e6;
+}
+
+.leaflet-map {
+  width: 100%;
+  height: 520px;
+}
+
+.leaflet-container {
+  font: inherit;
+}
+
+.leaflet-popup-content-wrapper,
+.leaflet-popup-tip {
+  border-radius: var(--radius);
+}
+
+.district-tooltip {
+  border: 0;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.86);
+  color: var(--ink);
+  box-shadow: 0 2px 10px rgba(31, 41, 51, 0.18);
+  font-weight: 800;
 }
 
 .map-bg {
@@ -754,6 +852,7 @@ footer {
   .pathway-grid,
   .activity-grid,
   .tutorial-grid,
+  .concept-grid,
   .framework-grid,
   .case-grid {
     grid-template-columns: 1fr;
@@ -785,8 +884,15 @@ footer {
   .map-panel,
   .control-panel,
   .feature-poster,
-  .checklist {
+  .checklist,
+  .publication-panel {
     padding: 16px;
+  }
+
+  .leaflet-shell,
+  .leaflet-map {
+    min-height: 430px;
+    height: 430px;
   }
 
   .panel-title-row,
@@ -816,7 +922,8 @@ footer {
   .site-header,
   footer,
   .button-row,
-  .control-panel {
+  .control-panel,
+  .leaflet-control-container {
     display: none;
   }
 
