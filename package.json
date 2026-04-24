@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "fetch:simd": "node scripts/fetch-simd-glasgow.mjs",
     "preview": "vite preview"
   },
   "dependencies": {

@@ -1,18 +1,31 @@
 # Atlas Praxis Studio Data
 
-The Studio attempts to load a real Glasgow ward boundary layer from:
+The Visual Reasoning Studio loads Glasgow SIMD 2020v2 data zones from:
 
 ```text
-public/data/glasgow-wards.geojson
+public/data/glasgow-simd-2020v2.geojson
 ```
 
-Place a valid GeoJSON `FeatureCollection` at that path to replace the fallback teaching layer. If the file is missing, Atlas Praxis uses `src/data/glasgow-learning-districts.geojson`, a synthetic Glasgow learning-district layer with illustrative teaching variables.
+Generate the local static data file with:
 
-The current teaching variables are illustrative:
+```bash
+npm.cmd run fetch:simd
+```
 
-- Accessibility index
-- Green space access
-- Housing pressure
-- Transit intensity
+The fetch script queries the Scottish Government SIMD2020 ArcGIS Feature Layer for `laname = 'Glasgow City'` and writes a GeoJSON `FeatureCollection` for static use in the browser. The deployed app should read the local GeoJSON and should not query the remote ArcGIS service at runtime.
 
-They are designed for map-reading and classification exercises, not operational city analysis.
+The Studio expects these SIMD fields:
+
+- `rankv2`
+- `percentv2`
+- `quintilev2`
+- `decilev2`
+- `incrankv2`
+- `emprank`
+- `hlthrank`
+- `edurank`
+- `gaccrank`
+- `crimerank`
+- `houserank`
+
+In SIMD, lower ranks indicate greater relative deprivation. Atlas Praxis reverses rank values for choropleth intensity while preserving the original rank values in popups.

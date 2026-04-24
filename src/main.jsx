@@ -658,7 +658,9 @@ function Studio() {
     fetch(SIMD_DATA_URL)
       .then((response) => {
         if (!response.ok) {
-          throw new Error("SIMD data file not found. Run npm.cmd run fetch:simd to generate the Glasgow SIMD layer.");
+          throw new Error(
+            "Glasgow SIMD data is not available locally. Run npm.cmd run fetch:simd, commit public/data/glasgow-simd-2020v2.geojson, and redeploy."
+          );
         }
         return response.json();
       })
@@ -675,7 +677,10 @@ function Studio() {
       .catch((error) => {
         if (!ignore) {
           setSimdGeojson(null);
-          setLoadError(error.message || "SIMD data file not found. Run npm.cmd run fetch:simd to generate the Glasgow SIMD layer.");
+          setLoadError(
+            error.message ||
+              "Glasgow SIMD data is not available locally. Run npm.cmd run fetch:simd, commit public/data/glasgow-simd-2020v2.geojson, and redeploy."
+          );
         }
       });
 

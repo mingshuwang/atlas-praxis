@@ -18,7 +18,7 @@ The teaching content is developed in connection with GEOG5026 Visualisation & Ma
 ## Pages And Features
 
 - Home: product overview, learning pathway, course integration, and classroom activities.
-- Studio: Leaflet map studio centred on Glasgow with OpenStreetMap tiles, attribution, choropleth controls, palette notes, classification notes, and illustrative teaching variables.
+- Studio: Leaflet map studio centred on Glasgow with OpenStreetMap tiles, attribution, Glasgow SIMD 2020v2 data zones, deprivation-rank handling, palette notes, and classification notes.
 - Tutorials: guided activities on OS cartographic design principles, map critique, bivariate mapping, quantile classification, colour combinations, and cartograms.
 - Concepts: public teaching notes on map communication, visual perception, geovisualisation, data structure, visualisation purpose, and interaction.
 - Critique: five-part framework covering Representation, Perception, Interpretation, Ethics, and Communication.
@@ -28,18 +28,34 @@ The teaching content is developed in connection with GEOG5026 Visualisation & Ma
 
 ## Studio Data
 
-The Studio attempts to load a real Glasgow ward boundary GeoJSON from:
+The Visual Reasoning Studio uses a local static Glasgow SIMD 2020v2 GeoJSON file:
 
 ```text
-public/data/glasgow-wards.geojson
+public/data/glasgow-simd-2020v2.geojson
 ```
 
-If that file is missing, the app falls back to a bundled synthetic Glasgow learning-district layer and labels it clearly as a fallback teaching layer. The included variables are illustrative teaching variables:
+Generate or refresh the file with:
 
-- Accessibility index
-- Green space access
-- Housing pressure
-- Transit intensity
+```bash
+npm.cmd run fetch:simd
+```
+
+The fetch script queries the Scottish Government ArcGIS REST layer for Glasgow City only, saves the returned GeoJSON locally, and the browser reads that local file at runtime. This keeps the deployed app static and avoids live GIS service calls from the public site.
+
+The Studio supports:
+
+- Overall SIMD rank
+- SIMD percentile
+- SIMD quintile
+- Income rank
+- Employment rank
+- Health rank
+- Education rank
+- Access rank
+- Crime rank
+- Housing rank
+
+In SIMD, lower ranks indicate greater relative deprivation. The Studio reverses rank values for choropleth intensity so darker colours indicate greater deprivation, while popups still show the original SIMD ranks.
 
 The Studio uses the OpenStreetMap tile endpoint:
 
@@ -48,6 +64,8 @@ https://tile.openstreetmap.org/{z}/{x}/{y}.png
 ```
 
 No Mapbox token or paid map service is used.
+
+Data source: Scottish Government, Scottish Index of Multiple Deprivation 2020v2. Contains Ordnance Survey data © Crown copyright and database right. Used under the Open Government Licence.
 
 ## Case Study Resources
 
@@ -71,6 +89,12 @@ Start the development server:
 
 ```bash
 npm run dev
+```
+
+Fetch the Glasgow SIMD layer:
+
+```bash
+npm.cmd run fetch:simd
 ```
 
 Build the static production bundle:
@@ -98,7 +122,8 @@ Suggested deployment flow:
 1. Push the repository to GitHub.
 2. Import the repository into Vercel.
 3. Confirm the Vite framework preset.
-4. Deploy the static site.
+4. Ensure `public/data/glasgow-simd-2020v2.geojson` has been generated and committed.
+5. Deploy the static site.
 
 ## Instructor Materials
 
@@ -106,7 +131,7 @@ See [docs/instructor-guide.md](docs/instructor-guide.md) for a 30-60 minute clas
 
 ## Roadmap
 
-- Add a real Glasgow ward boundary GeoJSON and course-specific teaching attributes.
+- Add comparison mode for SIMD domains and alternative deprivation indicators.
 - Add side-by-side comparison of two map designs.
 - Add printable critique worksheets and instructor prompts.
 - Extend tutorials for web mapping, interaction, and mobile mapping.
