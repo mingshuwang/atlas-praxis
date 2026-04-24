@@ -2,13 +2,15 @@ import React, { useMemo, useState } from "react";
 import { createRoot } from "react-dom/client";
 import {
   BookOpen,
+  CheckCircle2,
   Eye,
   Layers,
   Map,
   MessageSquareText,
+  Palette,
   Presentation,
+  Route,
   SlidersHorizontal,
-  Sparkles,
 } from "lucide-react";
 import geojsonText from "./data/glasgow-learning-districts.geojson?raw";
 import "./style.css";
@@ -59,6 +61,48 @@ const pages = [
   ["critique", "Critique"],
   ["featured", "Featured Graphics"],
   ["about", "About"],
+];
+
+const learningPathway = [
+  ["Observe", "Read the mapped pattern, identify the visual hierarchy, and notice what the design makes salient."],
+  ["Modify", "Change classification, colour, opacity, labels, or mapped variable to test alternative interpretations."],
+  ["Critique", "Evaluate representation, perception, interpretation, ethics, and communication from the map user's perspective."],
+  ["Communicate", "Turn the strongest reading into a concise featured graphic with a clear geographic claim."],
+];
+
+const classroomActivities = [
+  {
+    title: "Classification and interpretation",
+    text: "Compare equal-interval and quantile classes, then explain how each method changes the apparent geography of advantage or concern.",
+  },
+  {
+    title: "Colour and perception",
+    text: "Test sequential palettes and opacity. Discuss contrast, legibility, visual emphasis, and the risk of overstating small differences.",
+  },
+  {
+    title: "User-centred map critique",
+    text: "Review the map as a non-specialist reader. Identify the first impression, likely inference, and one design choice that may mislead.",
+  },
+  {
+    title: "From map to featured graphic",
+    text: "Select a defensible pattern, refine the title and annotation, and prepare a short visual argument for discussion.",
+  },
+];
+
+const critiqueFramework = [
+  ["Representation", "What data, geography, scale, and classification choices define the map's version of reality?"],
+  ["Perception", "How do colour, contrast, symbols, labels, and layout guide attention?"],
+  ["Interpretation", "What claim will a reader likely make from the map, and what alternatives remain plausible?"],
+  ["Ethics", "Where might uncertainty, omission, aggregation, or audience assumptions affect responsible use?"],
+  ["Communication", "Does the graphic make one clear geographic argument for its intended audience?"],
+];
+
+const featuredChecklist = [
+  "The title states a geographic claim rather than only naming a variable.",
+  "The classification and colour choices support the intended interpretation.",
+  "The map hierarchy leads from pattern to explanation.",
+  "Annotations clarify exceptions, uncertainty, or important local context.",
+  "The final takeaway is concise enough for a short presentation.",
 ];
 
 function valuesFor(metric) {
@@ -172,28 +216,71 @@ function Header({ active, setActive }) {
 
 function Home({ setActive }) {
   return (
-    <main className="page home-layout">
-      <section className="intro-panel">
-        <p className="eyebrow">CATCON 9 initial prototype | GEOG5026 Visualisation & Map Use</p>
-        <h1>An open geomatics studio for visual reasoning.</h1>
-        <p className="large">
-          Atlas Praxis supports postgraduate teaching in map design, geovisualisation, and cartographic critique.
-          The prototype turns map production into an iterative studio practice: test an encoding, read the pattern,
-          critique the result, and refine the argument.
-        </p>
-        <div className="button-row">
-          <button className="primary" onClick={() => setActive("studio")}>
-            Open Studio
-          </button>
-          <button className="secondary" onClick={() => setActive("critique")}>
-            Review Critique Prompts
-          </button>
+    <main className="page">
+      <section className="home-layout">
+        <div className="intro-panel">
+          <p className="eyebrow">Open geomatics teaching studio</p>
+          <h1>Atlas Praxis is an open geomatics teaching studio for visual reasoning.</h1>
+          <p className="large">
+            It helps students examine how maps represent geographic information, how visual perception shapes map use,
+            and how design choices become defensible visual arguments.
+          </p>
+          <div className="button-row">
+            <button className="primary" onClick={() => setActive("studio")}>
+              Open Studio
+            </button>
+            <button className="secondary" onClick={() => setActive("critique")}>
+              Use Critique Framework
+            </button>
+          </div>
+        </div>
+        <section className="teaching-flow" aria-label="Core teaching uses">
+          <Feature icon={<Eye />} title="Visual reasoning" text="Compare how classification, colour, opacity, and labels shape visible spatial patterns." />
+          <Feature icon={<MessageSquareText />} title="Map-user evaluation" text="Assess the map from the perspective of a reader, client, peer reviewer, or public audience." />
+          <Feature icon={<Presentation />} title="Featured graphics" text="Move from exploration to a concise visual argument with hierarchy, annotation, and a clear takeaway." />
+        </section>
+      </section>
+
+      <section className="section-block">
+        <SectionHeader
+          eyebrow="Learning pathway"
+          title="Observe -> Modify -> Critique -> Communicate."
+          text="Atlas Praxis structures practical map work as a repeatable studio cycle for postgraduate geomatics teaching."
+        />
+        <div className="pathway-grid">
+          {learningPathway.map(([title, text], index) => (
+            <article className="pathway-card" key={title}>
+              <span>{String(index + 1).padStart(2, "0")}</span>
+              <h3>{title}</h3>
+              <p>{text}</p>
+            </article>
+          ))}
         </div>
       </section>
-      <section className="teaching-flow" aria-label="Teaching flow">
-        <Feature icon={<Eye />} title="See" text="Compare how classification, colour, opacity, and labels shape visible spatial patterns." />
-        <Feature icon={<MessageSquareText />} title="Critique" text="Evaluate the map from the perspective of a reader, client, or peer reviewer." />
-        <Feature icon={<Presentation />} title="Share" text="Prepare a featured graphic with a clear claim, visual hierarchy, and concise takeaway." />
+
+      <section className="section-block course-band">
+        <SectionHeader
+          eyebrow="Course integration"
+          title="Connected to GEOG5026 Visualisation & Map Use."
+          text="Developed in connection with postgraduate teaching at the University of Glasgow, the studio foregrounds applied map design, geographic information visualisation, map use, visual perception, map-user evaluation, map critique, and featured graphics."
+        />
+      </section>
+
+      <section className="section-block">
+        <SectionHeader
+          eyebrow="Classroom activities"
+          title="Short activities for studio teaching."
+          text="Each activity can be used as a seminar prompt, workshop exercise, or bridge between map exploration and discussion."
+        />
+        <div className="activity-grid">
+          {classroomActivities.map((activity) => (
+            <article className="activity-card" key={activity.title}>
+              <CheckCircle2 size={20} aria-hidden="true" />
+              <h3>{activity.title}</h3>
+              <p>{activity.text}</p>
+            </article>
+          ))}
+        </div>
       </section>
     </main>
   );
@@ -210,6 +297,16 @@ function Feature({ icon, title, text }) {
         <p>{text}</p>
       </div>
     </article>
+  );
+}
+
+function SectionHeader({ eyebrow, title, text }) {
+  return (
+    <div className="section-header">
+      <p className="eyebrow">{eyebrow}</p>
+      <h2>{title}</h2>
+      <p>{text}</p>
+    </div>
   );
 }
 
@@ -420,26 +517,23 @@ function Studio() {
 }
 
 function Critique() {
-  const prompts = [
-    ["Purpose", "What claim is the map designed to support, and is that claim visible without explanation?"],
-    ["Perception", "Which colours, symbols, labels, or contrasts guide attention first?"],
-    ["Data portrayal", "Is the classification method appropriate for the data and the teaching question?"],
-    ["Map user", "What would a non-specialist reader infer, and where might they be misled?"],
-    ["Revision", "What single design change would most improve interpretation?"],
-  ];
-
   return (
     <main className="page two-column">
       <section className="intro-panel compact">
-        <p className="eyebrow">Structured map critique</p>
+        <p className="eyebrow">Critique framework</p>
         <h2>From looking at maps to reasoning with maps.</h2>
         <p>
-          These prompts support seminar discussion, peer review, and revision of postgraduate mapping work. They
-          focus attention on evidence, interpretation, audience, and design responsibility.
+          The framework helps students evaluate a map as a designed argument. It can be used during peer review,
+          seminar discussion, or revision of a geographic visual.
         </p>
+        <div className="button-row">
+          <button className="secondary" onClick={() => window.print()}>
+            Print Framework
+          </button>
+        </div>
       </section>
       <section className="prompt-list">
-        {prompts.map(([title, text], idx) => (
+        {critiqueFramework.map(([title, text], idx) => (
           <article className="prompt-card" key={title}>
             <span>{String(idx + 1).padStart(2, "0")}</span>
             <h3>{title}</h3>
@@ -456,29 +550,28 @@ function FeaturedGraphics() {
     <main className="page featured-layout">
       <section className="feature-poster">
         <p className="eyebrow">Featured graphics</p>
-        <h2>One visual argument, clearly framed.</h2>
+        <h2>From map exploration to a presentation-ready geographic visual.</h2>
         <div className="poster-box">
           <div className="poster-map" aria-hidden="true">
             <Map size={72} />
           </div>
           <div>
-            <h3>Where does accessibility concentrate?</h3>
+            <h3>Make one defensible claim visible.</h3>
             <p>
-              A strong featured graphic combines a purposeful map, a precise title, selected annotation, and a
-              concise interpretation for a defined audience.
+              Start with the Studio, test alternative encodings, choose the clearest interpretation, and refine the
+              output into a graphic that can support short oral discussion.
             </p>
           </div>
+        </div>
+        <div className="featured-steps" aria-label="Featured graphics workflow">
+          {["Explore the pattern", "Choose the claim", "Refine hierarchy", "Add context", "Present the takeaway"].map((step) => (
+            <span key={step}>{step}</span>
+          ))}
         </div>
       </section>
       <aside className="checklist">
         <h3>Publication checklist</h3>
-        {[
-          "The title states the geographic argument.",
-          "The classification method is defensible.",
-          "The hierarchy leads from pattern to interpretation.",
-          "Annotations explain important exceptions.",
-          "The takeaway is ready for oral presentation.",
-        ].map((item) => (
+        {featuredChecklist.map((item) => (
           <label key={item}>
             <input type="checkbox" /> {item}
           </label>
@@ -498,14 +591,20 @@ function About() {
         <p className="eyebrow">Open-source teaching software</p>
         <h2>Built for postgraduate geomatics education.</h2>
         <p>
-          Atlas Praxis is aligned with GEOG5026 Visualisation & Map Use at the University of Glasgow. The prototype
-          supports applied map design, geovisualisation, map use, critique, and featured-graphics communication.
+          Atlas Praxis is developed in connection with GEOG5026 Visualisation & Map Use at the University of Glasgow.
+          It supports applied map design, geographic information visualisation, map use, visual perception, critique,
+          and featured-graphics communication.
+        </p>
+        <p className="about-note">
+          Project note: early development has also been shaped by CATCON 9 evaluation and open cartographic education
+          goals.
         </p>
       </section>
       <section className="roadmap">
-        <Feature icon={<BookOpen />} title="Pedagogical alignment" text="Supports visual perception, data portrayal, map user evaluation, and seminar discussion." />
+        <Feature icon={<BookOpen />} title="Teaching alignment" text="Supports visual perception, representation, interpretation, user evaluation, critique, and oral discussion." />
         <Feature icon={<Layers />} title="Portable implementation" text="Runs as a static React/Vite application with bundled demonstration data and no map token." />
-        <Feature icon={<Sparkles />} title="Roadmap" text="Next modules: side-by-side comparison, critique export, web mapping labs, and geodatabase design exercises." />
+        <Feature icon={<Route />} title="Learning pathway" text="Guides learners from observing a pattern to modifying a design, critiquing the result, and communicating a claim." />
+        <Feature icon={<Palette />} title="Roadmap" text="Next modules: comparison mode, printable instructor materials, web mapping labs, and geodatabase design exercises." />
       </section>
     </main>
   );
@@ -522,7 +621,7 @@ function App() {
       {active === "critique" && <Critique />}
       {active === "featured" && <FeaturedGraphics />}
       {active === "about" && <About />}
-      <footer>Atlas Praxis | CATCON 9 prototype | Dr Mingshu Wang, University of Glasgow</footer>
+      <footer>Atlas Praxis | Open geomatics teaching studio | University of Glasgow</footer>
     </div>
   );
 }

@@ -1,26 +1,27 @@
 # Atlas Praxis
 
-Atlas Praxis is an open-source React/Vite teaching prototype for postgraduate geomatics education. It is prepared as an initial CATCON 9 evaluation prototype linked to GEOG5026 Visualisation & Map Use at the University of Glasgow.
+Atlas Praxis is an open geomatics teaching studio for visual reasoning. It is a static React/Vite application that helps students examine how map design choices shape geographic interpretation, map use, critique, and communication.
 
-The app is intentionally static: it uses bundled demonstration data, requires no backend, and does not depend on paid APIs, API keys, or external map tokens.
+The app uses bundled demonstration data and has no backend, login, database, upload system, paid API, API key, or external map token.
 
-## Teaching Concept
+## Teaching Purpose
 
-Atlas Praxis supports visual reasoning with maps. Students can adjust a choropleth design, read how the pattern changes, critique the cartographic choices, and prepare a concise featured graphic for seminar discussion or assessment.
+Atlas Praxis supports postgraduate geomatics teaching by turning map production into a studio cycle:
 
-The current prototype focuses on three teaching moves:
+- Observe: read the mapped pattern and visual hierarchy.
+- Modify: test classification, colour, opacity, labels, and mapped variables.
+- Critique: evaluate representation, perception, interpretation, ethics, and communication.
+- Communicate: refine a map exploration into a presentation-ready featured graphic.
 
-- See: compare how classification, colour, opacity, and labels shape spatial interpretation.
-- Critique: evaluate maps from the perspective of map users and peer reviewers.
-- Share: frame a featured graphic around one clear geographic argument.
+The public teaching content is developed in connection with GEOG5026 Visualisation & Map Use at the University of Glasgow. It draws on course themes including applied map design, geographic information visualisation, map use, visual perception, map-user evaluation, map critique, and featured graphics. Internal assessment details, grading criteria, course administration, copyrighted examples, and student materials are not published in the app.
 
-## Prototype Pages
+## Pages
 
-- Home: project introduction and teaching rationale.
-- Studio: interactive choropleth design exercise using bundled Glasgow demonstration data.
-- Critique: structured prompts for postgraduate map critique.
-- Featured Graphics: checklist for presentation-ready geographic visuals.
-- About: pedagogical alignment and development roadmap.
+- Home: product overview, learning pathway, course integration, and classroom activities.
+- Studio: interactive choropleth exercise using bundled Glasgow demonstration data.
+- Critique: five-part framework for structured map critique.
+- Featured Graphics: workflow and checklist for moving from map exploration to a clear geographic visual.
+- About: pedagogical alignment, implementation notes, and roadmap.
 
 ## Local Development
 
@@ -50,34 +51,40 @@ npm run preview
 
 ## Deployment
 
-Atlas Praxis can be deployed to Vercel as a static Vite application.
+Atlas Praxis can be deployed to Vercel with default Vite settings.
+
+- Build command: `npm run build`
+- Output directory: `dist`
+- Environment variables: none
+
+Suggested deployment flow:
 
 1. Push the repository to GitHub.
 2. Import the repository into Vercel.
-3. Use the default Vite framework settings.
-4. Build command: `npm run build`.
-5. Output directory: `dist`.
-6. Publish the deployed URL with the CATCON 9 submission materials.
+3. Confirm the Vite framework preset.
+4. Deploy the static site.
 
-No environment variables are required for the current prototype.
+## Instructor Materials
+
+See [docs/instructor-guide.md](docs/instructor-guide.md) for a 30-60 minute class plan that uses the Studio, Critique, and Featured Graphics pages without requiring accounts or external services.
 
 ## CATCON 9 Context
 
-The prototype demonstrates how open teaching software can support studio-based geomatics learning without requiring specialist desktop GIS infrastructure. It is designed for early evaluation rather than production teaching at scale.
+Atlas Praxis has also been prepared for CATCON 9 evaluation as an open cartographic education resource. The public-facing site is written as a teaching product; CATCON-specific context is kept in project documentation.
 
 Evaluation questions:
 
 - Does the Studio help students explain how design choices affect map interpretation?
-- Are the critique prompts concise enough for seminar and workshop use?
-- Does the featured-graphics workflow support clearer oral presentation of geographic arguments?
-- What additional scaffolding would help students connect map design, map use, and uncertainty?
+- Does the critique framework support concise seminar discussion?
+- Does the featured-graphics workflow help students move from exploration to communication?
+- What additional scaffolding would help instructors adapt the studio to other geomatics topics?
 
 ## Roadmap
 
 - Side-by-side comparison of two map designs.
-- Exportable critique worksheet for seminars and assessment.
-- Student featured-graphics gallery using static example content.
-- Web and mobile mapping lab extension.
+- Printable critique worksheet and instructor prompts.
+- Static gallery of example featured graphics created specifically for the project.
+- Additional web and mobile mapping activities.
 - Geodatabase and land administration teaching exercises.
 - Optional teaching notes for GEOG5026 workshops.
 
