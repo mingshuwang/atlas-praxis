@@ -16,26 +16,17 @@ import {
   SlidersHorizontal,
 } from "lucide-react";
 import "leaflet/dist/leaflet.css";
-import geojsonText from "./data/glasgow-learning-districts.geojson?raw";
 import "./style.css";
 
-const fallbackGeojson = JSON.parse(geojsonText);
+const SIMD_DATA_URL = "/data/glasgow-simd-2020v2.geojson";
+const SIMD_MAX_RANK = 6976;
+const SIMD_REVERSED_MAX = SIMD_MAX_RANK + 1;
 
 const palettes = {
-  Blues: {
+  "Official SIMD-style": {
     type: "Sequential",
-    note: "Good for ordered values where higher scores should read as stronger intensity.",
-    colors: ["#eff6ff", "#bfdbfe", "#60a5fa", "#2563eb", "#1e3a8a"],
-  },
-  Greens: {
-    type: "Sequential",
-    note: "Useful for environmental or access variables when the data increase in one direction.",
-    colors: ["#f0fdf4", "#bbf7d0", "#4ade80", "#16a34a", "#14532d"],
-  },
-  Purples: {
-    type: "Sequential",
-    note: "A compact ordered palette that can work well for density or pressure indicators.",
-    colors: ["#faf5ff", "#e9d5ff", "#c084fc", "#7e22ce", "#3b0764"],
+    note: "A deprivation-intensity palette: darker red tones indicate higher relative deprivation.",
+    colors: ["#fff7ec", "#fdd49e", "#fdbb84", "#ef6548", "#990000"],
   },
   Viridis: {
     type: "Sequential",
@@ -47,60 +38,124 @@ const palettes = {
     note: "Designed to remain legible for many readers with colour-vision differences.",
     colors: ["#00224e", "#414d6b", "#7c7b78", "#b8ad6d", "#fee838"],
   },
-  "Blue-Orange diverging": {
-    type: "Diverging",
-    note: "Best when values are interpreted around a meaningful middle point.",
-    colors: ["#2166ac", "#92c5de", "#f7f7f7", "#f4a582", "#b2182b"],
+  Blues: {
+    type: "Sequential",
+    note: "A familiar ordered palette for low-to-high intensity mapping.",
+    colors: ["#eff6ff", "#bfdbfe", "#60a5fa", "#2563eb", "#1e3a8a"],
   },
-  "Purple-Green diverging": {
+  Greens: {
+    type: "Sequential",
+    note: "Useful for ordered comparisons, especially when the theme invites environmental associations.",
+    colors: ["#f0fdf4", "#bbf7d0", "#4ade80", "#16a34a", "#14532d"],
+  },
+  "Purple-Green": {
     type: "Diverging",
-    note: "Useful for contrasting two sides of a balanced conceptual scale.",
+    note: "A diverging palette for teaching contrast; use carefully when the data do not have a meaningful midpoint.",
     colors: ["#762a83", "#af8dc3", "#f7f7f7", "#7fbf7b", "#1b7837"],
   },
+  "Blue-Orange": {
+    type: "Diverging",
+    note: "A diverging palette that can make contrasts vivid, but may imply two-sided meaning.",
+    colors: ["#2166ac", "#92c5de", "#f7f7f7", "#f4a582", "#b2182b"],
+  },
   "Colour-blind-aware": {
-    type: "Accessibility-aware",
-    note: "A restrained palette selected for stronger separability under common colour-vision constraints.",
+    type: "Colour-blind-aware",
+    note: "A restrained sequential palette selected for stronger separability under common colour-vision constraints.",
     colors: ["#fef0d9", "#fdcc8a", "#fc8d59", "#d7301f", "#7f0000"],
   },
 };
 
-const metrics = {
-  accessibility: {
-    label: "Accessibility index",
-    short: "Access",
-    unit: "index score",
-    description: "An illustrative teaching variable for access to services, destinations, and everyday opportunities.",
-    prompt: "Where would a reader infer stronger accessibility, and how much does the classification support that reading?",
+const simdVariables = {
+  overallRank: {
+    label: "Overall SIMD rank",
+    short: "Overall",
+    field: "rankv2",
+    rank: true,
+    description: "Overall Scottish Index of Multiple Deprivation 2020v2 rank.",
   },
-  green: {
-    label: "Green space access",
-    short: "Green",
-    unit: "index score",
-    description: "An illustrative teaching variable for parks, open space, and environmental amenity.",
-    prompt: "Which districts look comparatively underserved, and how confident is that reading?",
+  percentile: {
+    label: "SIMD percentile",
+    short: "Percentile",
+    field: "percentv2",
+    lowerIsMoreDeprived: true,
+    max: 100,
+    description: "SIMD percentile, interpreted as deprivation intensity for display.",
+  },
+  quintile: {
+    label: "SIMD quintile",
+    short: "Quintile",
+    field: "quintilev2",
+    lowerIsMoreDeprived: true,
+    max: 5,
+    description: "SIMD quintile grouping, where 1 is most deprived.",
+  },
+  income: {
+    label: "Income rank",
+    short: "Income",
+    field: "incrankv2",
+    rank: true,
+    description: "Income domain rank.",
+  },
+  employment: {
+    label: "Employment rank",
+    short: "Employment",
+    field: "emprank",
+    rank: true,
+    description: "Employment domain rank.",
+  },
+  health: {
+    label: "Health rank",
+    short: "Health",
+    field: "hlthrank",
+    rank: true,
+    description: "Health domain rank.",
+  },
+  education: {
+    label: "Education rank",
+    short: "Education",
+    field: "edurank",
+    rank: true,
+    description: "Education, skills and training domain rank.",
+  },
+  access: {
+    label: "Access rank",
+    short: "Access",
+    field: "gaccrank",
+    rank: true,
+    description: "Geographic access to services domain rank.",
+  },
+  crime: {
+    label: "Crime rank",
+    short: "Crime",
+    field: "crimerank",
+    rank: true,
+    description: "Crime domain rank.",
   },
   housing: {
-    label: "Housing pressure",
+    label: "Housing rank",
     short: "Housing",
-    unit: "index score",
-    description: "An illustrative teaching variable combining urban intensity and limited environmental amenity.",
-    prompt: "Which areas appear under stronger housing pressure, and what could be hidden by the chosen geography?",
-  },
-  transit: {
-    label: "Transit intensity",
-    short: "Transit",
-    unit: "index score",
-    description: "An illustrative teaching variable for transport activity and centrality.",
-    prompt: "Does the map imply a compact core, a corridor pattern, or several local centres?",
+    field: "houserank",
+    rank: true,
+    description: "Housing domain rank.",
   },
 };
 
 const classificationMethods = {
-  "Equal interval": "Equal intervals preserve numeric distance, but sparse extreme values can dominate the apparent pattern.",
-  Quantile: "Quantiles put a similar number of areas in each class, which supports comparison but can exaggerate small differences.",
-  "Natural breaks / Jenks": "Jenks grouping follows clusters in the data, often producing intuitive classes but making comparisons less standardised.",
-  "Standard deviation": "Standard deviation classes show distance from the mean, which foregrounds unusual areas and central tendency.",
+  "Official quintile": "Uses Scottish Government SIMD quintile grouping.",
+  Decile: "Uses Scottish Government SIMD decile grouping.",
+  "Equal interval": "Divides the numerical range evenly.",
+  Quantile: "Puts roughly equal numbers of data zones in each class.",
+  "Natural breaks / Jenks": "Groups similar values and maximises difference between classes.",
+  "Standard deviation": "Shows distance from the mean.",
 };
+
+const reasoningPrompts = [
+  "What spatial pattern is immediately visible?",
+  "How does the pattern change when switching from overall SIMD to a single domain?",
+  "Which classification method makes local contrasts more or less visible?",
+  "Does the colour palette support interpretation for a general audience?",
+  "What are the risks of interpreting area-based deprivation as individual deprivation?",
+];
 
 const pages = [
   ["home", "Home"],
@@ -123,11 +178,11 @@ const learningPathway = [
 const classroomActivities = [
   {
     title: "Classification and interpretation",
-    text: "Compare equal-interval and quantile classes, then explain how each method changes the apparent geography of advantage or concern.",
+    text: "Compare official SIMD groupings with alternative classifications, then explain how each method changes the apparent geography of deprivation.",
   },
   {
     title: "Colour and perception",
-    text: "Test sequential palettes and opacity. Discuss contrast, legibility, visual emphasis, and the risk of overstating small differences.",
+    text: "Test sequential, diverging, and colour-blind-aware palettes. Discuss contrast, legibility, and whether darker colours support the intended reading.",
   },
   {
     title: "User-centred map critique",
@@ -266,160 +321,174 @@ const caseStudies = [
   },
 ];
 
-function deterministicScore(index, seed, min = 24, max = 96) {
-  const raw = Math.sin((index + 1) * seed) * 10000;
-  return Math.round(min + (raw - Math.floor(raw)) * (max - min));
+function readField(feature, field) {
+  const properties = feature?.properties || {};
+  return properties[field] ?? properties[field.toUpperCase()] ?? properties[field.toLowerCase()];
 }
 
-function numericValue(...values) {
-  const found = values.find((value) => Number.isFinite(Number(value)));
-  return found === undefined ? undefined : Number(found);
+function numberField(feature, field) {
+  const value = Number(readField(feature, field));
+  return Number.isFinite(value) ? value : undefined;
 }
 
-function getFeatureName(feature, index) {
-  const properties = feature.properties || {};
-  return (
-    properties._atlasName ||
-    properties.name ||
-    properties.Name ||
-    properties.WD13NM ||
-    properties.WD23NM ||
-    properties.ward_name ||
-    properties.WardName ||
-    `Area ${index + 1}`
-  );
+function textField(feature, field, fallback = "") {
+  const value = readField(feature, field);
+  return value === undefined || value === null ? fallback : String(value);
 }
 
-function enrichFeature(feature, index, source) {
-  const properties = feature.properties || {};
-  const accessibility = numericValue(properties.accessibility, properties.Accessibility, deterministicScore(index, 3.11));
-  const green = numericValue(properties.green, properties.Green, deterministicScore(index, 5.37));
-  const transit = numericValue(properties.transit, properties.Transit, properties.density, deterministicScore(index, 7.19));
-  const housing = numericValue(
-    properties.housing,
-    properties.Housing,
-    Math.round(transit * 0.58 + (100 - green) * 0.42)
-  );
-
-  return {
-    ...feature,
-    properties: {
-      ...properties,
-      _atlasId: properties._atlasId || properties.id || properties.ID || `atlas-${source}-${index}`,
-      _atlasName: getFeatureName(feature, index),
-      _atlasLayerSource: source,
-      accessibility,
-      green,
-      housing,
-      transit,
-    },
-  };
+function formatNumber(value) {
+  if (!Number.isFinite(Number(value))) return "Not available";
+  return Number.isInteger(Number(value)) ? String(value) : Number(value).toFixed(1);
 }
 
-function prepareStudioGeojson(collection, source) {
-  return {
-    ...collection,
-    features: (collection.features || []).map((feature, index) => enrichFeature(feature, index, source)),
-  };
+function getOriginalValue(feature, variableKey) {
+  return numberField(feature, simdVariables[variableKey].field);
 }
 
-const fallbackStudioGeojson = prepareStudioGeojson(fallbackGeojson, "fallback");
+function getDisplayValue(feature, variableKey) {
+  const variable = simdVariables[variableKey];
+  const value = getOriginalValue(feature, variableKey);
 
-function valuesFor(collection, metric) {
-  return collection.features.map((feature) => Number(feature.properties[metric])).filter(Number.isFinite);
+  if (!Number.isFinite(value)) return undefined;
+  if (variable.rank) return SIMD_REVERSED_MAX - value;
+  if (variable.lowerIsMoreDeprived) return (variable.max || 100) + 1 - value;
+  return value;
 }
 
-function standardDeviationBreaks(vals, classes) {
-  const sorted = vals.slice().sort((a, b) => a - b);
+function getDatazoneCode(feature) {
+  return textField(feature, "datazone", "Unknown data zone");
+}
+
+function getDatazoneName(feature) {
+  return textField(feature, "dzname", getDatazoneCode(feature));
+}
+
+function getInterpretation(feature) {
+  const quintile = numberField(feature, "quintilev2");
+  if (quintile <= 2) return "More deprived relative to other Scottish data zones.";
+  if (quintile >= 4) return "Less deprived relative to other Scottish data zones.";
+  return "Around the Scottish middle of relative deprivation.";
+}
+
+function escapeHtml(value) {
+  return String(value).replace(/[&<>"']/g, (char) => (
+    {
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#39;",
+    }[char]
+  ));
+}
+
+function valuesFor(features, variableKey) {
+  return features.map((feature) => getDisplayValue(feature, variableKey)).filter(Number.isFinite);
+}
+
+function standardDeviationBreaks(values, classes) {
+  const sorted = values.slice().sort((a, b) => a - b);
   const min = sorted[0];
   const max = sorted[sorted.length - 1];
   const mean = ss.mean(sorted);
   const sd = ss.standardDeviation(sorted) || 1;
-  const offsets = {
+  const offsetsByClass = {
     3: [-0.5, 0.5],
     4: [-1, 0, 1],
     5: [-1.5, -0.5, 0.5, 1.5],
-  }[classes];
+    6: [-2, -1, 0, 1, 2],
+    7: [-2.5, -1.5, -0.5, 0.5, 1.5, 2.5],
+  };
+  const offsets = offsetsByClass[classes] || offsetsByClass[5];
   const thresholds = offsets.map((offset) => Math.max(min, Math.min(max, mean + offset * sd))).sort((a, b) => a - b);
   return [...thresholds, max];
 }
 
-function getBreaks(collection, metric, classes, method) {
-  const vals = valuesFor(collection, metric).slice().sort((a, b) => a - b);
-  const min = vals[0];
-  const max = vals[vals.length - 1];
+function getBreaks(features, variableKey, classes, method) {
+  const values = valuesFor(features, variableKey).slice().sort((a, b) => a - b);
+  const min = values[0];
+  const max = values[values.length - 1];
 
-  if (!vals.length) {
-    return Array.from({ length: classes }, () => 0);
-  }
-
-  if (max === min) {
-    return Array.from({ length: classes }, () => max);
-  }
+  if (!values.length) return Array.from({ length: classes }, () => 0);
+  if (max === min) return Array.from({ length: classes }, () => max);
 
   if (method === "Quantile") {
     return Array.from({ length: classes }, (_, index) => {
-      const rank = Math.ceil(((index + 1) / classes) * vals.length) - 1;
-      return vals[Math.min(vals.length - 1, rank)];
+      const rank = Math.ceil(((index + 1) / classes) * values.length) - 1;
+      return values[Math.min(values.length - 1, rank)];
     });
   }
 
   if (method === "Natural breaks / Jenks") {
     try {
-      const breaks = ss.jenks(vals, Math.min(classes, vals.length));
-      const upperBreaks = breaks.slice(1);
-      return upperBreaks.length === classes ? upperBreaks : getBreaks(collection, metric, classes, "Equal interval");
+      const breaks = ss.jenks(values, Math.min(classes, values.length));
+      return breaks.slice(1);
     } catch {
-      return getBreaks(collection, metric, classes, "Equal interval");
+      return getBreaks(features, variableKey, classes, "Equal interval");
     }
   }
 
   if (method === "Standard deviation") {
-    return standardDeviationBreaks(vals, classes);
+    return standardDeviationBreaks(values, classes);
   }
 
   const width = (max - min) / classes;
   return Array.from({ length: classes }, (_, index) => min + width * (index + 1));
 }
 
-function classify(value, breaks) {
+function classifyByBreaks(value, breaks) {
   const index = breaks.findIndex((threshold) => value <= threshold);
   return index === -1 ? breaks.length - 1 : index;
 }
 
-function getFill(value, breaks, paletteName) {
-  const palette = palettes[paletteName].colors;
-  const idx = classify(value, breaks);
-  const scaledIndex = Math.round((idx / Math.max(1, breaks.length - 1)) * (palette.length - 1));
-  return palette[scaledIndex];
+function paletteColor(index, classes, paletteName) {
+  const colors = palettes[paletteName].colors;
+  const scaledIndex = Math.round((index / Math.max(1, classes - 1)) * (colors.length - 1));
+  return colors[Math.max(0, Math.min(colors.length - 1, scaledIndex))];
 }
 
-function formatNumber(value) {
-  return Number.isInteger(value) ? String(value) : value.toFixed(1);
+function getClassInfo(feature, variableKey, method, classes, breaks) {
+  if (method === "Official quintile") {
+    const group = numberField(feature, "quintilev2");
+    return { index: 5 - group, classes: 5, group };
+  }
+
+  if (method === "Decile") {
+    const group = numberField(feature, "decilev2");
+    return { index: 10 - group, classes: 10, group };
+  }
+
+  const displayValue = getDisplayValue(feature, variableKey);
+  return { index: classifyByBreaks(displayValue, breaks), classes, group: undefined };
 }
 
-function buildLegend(collection, metric, classes, method, paletteName) {
-  const vals = valuesFor(collection, metric);
-  const sorted = vals.slice().sort((a, b) => a - b);
-  const min = sorted[0];
-  const breaks = getBreaks(collection, metric, classes, method);
-  const palette = palettes[paletteName].colors;
+function buildLegend(features, variableKey, method, classes, breaks, paletteName) {
+  if (method === "Official quintile" || method === "Decile") {
+    const field = method === "Official quintile" ? "quintilev2" : "decilev2";
+    const count = method === "Official quintile" ? 5 : 10;
+
+    return Array.from({ length: count }, (_, index) => {
+      const group = index + 1;
+      const classIndex = count - group;
+      const rows = features.filter((feature) => numberField(feature, field) === group).length;
+      const suffix = group === 1 ? "most deprived" : group === count ? "least deprived" : "relative group";
+      return {
+        color: paletteColor(classIndex, count, paletteName),
+        count: rows,
+        label: `${method === "Official quintile" ? "Quintile" : "Decile"} ${group} (${suffix})`,
+      };
+    });
+  }
 
   return breaks.map((upper, index) => {
-    const lower = index === 0 ? min : breaks[index - 1];
-    const colorIndex = Math.round((index / Math.max(1, classes - 1)) * (palette.length - 1));
-    const count = collection.features.filter((feature) => classify(feature.properties[metric], breaks) === index).length;
+    const lower = index === 0 ? Math.min(...valuesFor(features, variableKey)) : breaks[index - 1];
+    const rows = features.filter((feature) => classifyByBreaks(getDisplayValue(feature, variableKey), breaks) === index).length;
     return {
-      color: palette[colorIndex],
-      count,
+      color: paletteColor(index, classes, paletteName),
+      count: rows,
       label: index === 0 ? `<= ${formatNumber(upper)}` : `${formatNumber(lower)}-${formatNumber(upper)}`,
     };
   });
-}
-
-function metricExtent(collection, metric) {
-  const vals = valuesFor(collection, metric);
-  return [Math.min(...vals), Math.max(...vals)];
 }
 
 function Header({ active, setActive }) {
@@ -563,52 +632,50 @@ function SegmentedControl({ label, value, options, onChange, renderOption }) {
   );
 }
 
-function escapeHtml(value) {
-  return String(value).replace(/[&<>"']/g, (char) => (
-    {
-      "&": "&amp;",
-      "<": "&lt;",
-      ">": "&gt;",
-      '"': "&quot;",
-      "'": "&#39;",
-    }[char]
-  ));
-}
-
 function Studio() {
-  const [metric, setMetric] = useState("accessibility");
-  const [palette, setPalette] = useState("Blues");
-  const [method, setMethod] = useState("Equal interval");
+  const [variableKey, setVariableKey] = useState("overallRank");
+  const [palette, setPalette] = useState("Official SIMD-style");
+  const [method, setMethod] = useState("Official quintile");
   const [classes, setClasses] = useState(5);
-  const [opacity, setOpacity] = useState(0.88);
-  const [labels, setLabels] = useState(true);
-  const [selected, setSelected] = useState("centre");
+  const [opacity, setOpacity] = useState(0.82);
+  const [labels, setLabels] = useState(false);
+  const [selected, setSelected] = useState("");
   const [hovered, setHovered] = useState(null);
-  const [studioGeojson, setStudioGeojson] = useState(fallbackStudioGeojson);
-  const [layerStatus, setLayerStatus] = useState("Fallback teaching layer");
+  const [simdGeojson, setSimdGeojson] = useState(null);
+  const [loadError, setLoadError] = useState("");
+
+  const features = simdGeojson?.features || [];
+  const variable = simdVariables[variableKey];
+  const availableMethods =
+    variableKey === "overallRank"
+      ? Object.keys(classificationMethods)
+      : Object.keys(classificationMethods).filter((name) => name !== "Official quintile" && name !== "Decile");
+  const classCount = method === "Decile" ? 10 : method === "Official quintile" ? 5 : Number(classes);
 
   useEffect(() => {
     let ignore = false;
 
-    fetch("/data/glasgow-wards.geojson")
+    fetch(SIMD_DATA_URL)
       .then((response) => {
         if (!response.ok) {
-          throw new Error("Glasgow ward GeoJSON not available");
+          throw new Error("SIMD data file not found. Run npm.cmd run fetch:simd to generate the Glasgow SIMD layer.");
         }
         return response.json();
       })
       .then((data) => {
-        if (!ignore && data?.features?.length) {
-          const prepared = prepareStudioGeojson(data, "glasgow-wards");
-          setStudioGeojson(prepared);
-          setLayerStatus("Glasgow ward boundary layer");
-          setSelected(prepared.features[0].properties._atlasId);
+        if (!data?.features?.length) {
+          throw new Error("SIMD data file is empty or invalid. Run npm.cmd run fetch:simd again.");
+        }
+        if (!ignore) {
+          setSimdGeojson(data);
+          setSelected(getDatazoneCode(data.features[0]));
+          setLoadError("");
         }
       })
-      .catch(() => {
+      .catch((error) => {
         if (!ignore) {
-          setStudioGeojson(fallbackStudioGeojson);
-          setLayerStatus("Fallback teaching layer");
+          setSimdGeojson(null);
+          setLoadError(error.message || "SIMD data file not found. Run npm.cmd run fetch:simd to generate the Glasgow SIMD layer.");
         }
       });
 
@@ -618,53 +685,52 @@ function Studio() {
   }, []);
 
   useEffect(() => {
-    if (!studioGeojson.features.some((feature) => feature.properties._atlasId === selected)) {
-      setSelected(studioGeojson.features[0]?.properties._atlasId || "");
+    if (!availableMethods.includes(method)) {
+      setMethod("Equal interval");
     }
-  }, [selected, studioGeojson]);
+  }, [availableMethods, method]);
+
+  useEffect(() => {
+    if (features.length && !features.some((feature) => getDatazoneCode(feature) === selected)) {
+      setSelected(getDatazoneCode(features[0]));
+    }
+  }, [features, selected]);
 
   const breaks = useMemo(
-    () => getBreaks(studioGeojson, metric, Number(classes), method),
-    [studioGeojson, metric, classes, method]
+    () => (features.length ? getBreaks(features, variableKey, classCount, method) : []),
+    [features, variableKey, classCount, method]
   );
   const legend = useMemo(
-    () => buildLegend(studioGeojson, metric, Number(classes), method, palette),
-    [studioGeojson, metric, classes, method, palette]
+    () => (features.length ? buildLegend(features, variableKey, method, classCount, breaks, palette) : []),
+    [features, variableKey, method, classCount, breaks, palette]
   );
   const activeFeature = useMemo(
-    () =>
-      studioGeojson.features.find((feature) => feature.properties._atlasId === (hovered || selected)) ||
-      studioGeojson.features[0],
-    [studioGeojson, hovered, selected]
+    () => features.find((feature) => getDatazoneCode(feature) === (hovered || selected)) || features[0],
+    [features, hovered, selected]
   );
-  const [minValue, maxValue] = metricExtent(studioGeojson, metric);
-  const activeValue = activeFeature.properties[metric];
-  const activeClass = classify(activeValue, breaks) + 1;
-  const layerKey = `${layerStatus}-${metric}-${palette}-${method}-${classes}-${opacity}-${labels}`;
-  const layerNote =
-    layerStatus === "Fallback teaching layer"
-      ? "No public Glasgow ward GeoJSON was found at /data/glasgow-wards.geojson, so the Studio is using synthetic learning districts as a fallback teaching layer."
-      : "The Studio is using the public Glasgow ward GeoJSON supplied in /data/glasgow-wards.geojson with illustrative teaching variables.";
+  const displayValues = valuesFor(features, variableKey);
+  const minValue = displayValues.length ? Math.min(...displayValues) : undefined;
+  const maxValue = displayValues.length ? Math.max(...displayValues) : undefined;
+  const layerKey = `${variableKey}-${palette}-${method}-${classCount}-${opacity}-${labels}-${selected}-${hovered || ""}`;
 
   const styleFeature = (feature) => {
-    const id = feature.properties._atlasId;
+    const classInfo = getClassInfo(feature, variableKey, method, classCount, breaks);
+    const id = getDatazoneCode(feature);
     const isSelected = selected === id;
     const isHovered = hovered === id;
 
     return {
       color: isSelected || isHovered ? "#1f2933" : "#ffffff",
-      fillColor: getFill(Number(feature.properties[metric]), breaks, palette),
+      fillColor: paletteColor(classInfo.index, classInfo.classes, palette),
       fillOpacity: opacity,
       opacity: 1,
-      weight: isSelected ? 4 : isHovered ? 3 : 1.5,
+      weight: isSelected ? 3 : isHovered ? 2.4 : 0.8,
     };
   };
 
   const bindFeature = (feature, layer) => {
-    const properties = feature.properties;
-    const id = properties._atlasId;
-    const name = properties._atlasName;
-    const value = properties[metric];
+    const id = getDatazoneCode(feature);
+    const selectedValue = getOriginalValue(feature, variableKey);
 
     layer.on({
       click: () => setSelected(id),
@@ -675,12 +741,20 @@ function Studio() {
       mouseout: () => setHovered(null),
     });
 
-    layer.bindPopup(
-      `<strong>${escapeHtml(name)}</strong><br>${escapeHtml(metrics[metric].label)}: ${escapeHtml(value)} / 100`
-    );
+    layer.bindPopup(`
+      <strong>${escapeHtml(getDatazoneName(feature))}</strong><br>
+      <strong>Data zone:</strong> ${escapeHtml(id)}<br>
+      <strong>Local authority:</strong> ${escapeHtml(textField(feature, "laname", "Glasgow City"))}<br>
+      <strong>Overall rank:</strong> ${escapeHtml(formatNumber(numberField(feature, "rankv2")))}<br>
+      <strong>Quintile:</strong> ${escapeHtml(formatNumber(numberField(feature, "quintilev2")))}<br>
+      <strong>Decile:</strong> ${escapeHtml(formatNumber(numberField(feature, "decilev2")))}<br>
+      <strong>Percentile:</strong> ${escapeHtml(formatNumber(numberField(feature, "percentv2")))}<br>
+      <strong>${escapeHtml(variable.label)}:</strong> ${escapeHtml(formatNumber(selectedValue))}<br>
+      <em>${escapeHtml(getInterpretation(feature))}</em>
+    `);
 
     if (labels) {
-      layer.bindTooltip(escapeHtml(name), {
+      layer.bindTooltip(escapeHtml(id), {
         className: "district-tooltip",
         direction: "center",
         permanent: true,
@@ -694,16 +768,21 @@ function Studio() {
         <div className="panel-title-row">
           <div>
             <p className="eyebrow">Visual Reasoning Studio</p>
-            <h2 id="studio-heading">{metrics[metric].label}</h2>
-            <p className="panel-copy">{metrics[metric].description}</p>
+            <h2 id="studio-heading">Glasgow SIMD Explorer</h2>
+            <p className="panel-copy">
+              Explore Scottish Index of Multiple Deprivation 2020v2 data zones in Glasgow. Darker colours show greater
+              relative deprivation by default.
+            </p>
           </div>
           <span className="pill">Leaflet + OpenStreetMap</span>
         </div>
 
         <div className="map-status-row">
-          <span className="pill muted-pill">{layerStatus}</span>
-          <span>Illustrative teaching variables, not operational city indicators.</span>
+          <span className="pill muted-pill">SIMD 2020v2</span>
+          <span>In SIMD, lower ranks indicate greater relative deprivation.</span>
         </div>
+
+        {loadError && <div className="map-alert">{loadError}</div>}
 
         <div className="leaflet-shell" aria-label="Interactive Leaflet choropleth map centred on Glasgow">
           <MapContainer center={[55.8642, -4.2518]} zoom={11} scrollWheelZoom className="leaflet-map">
@@ -711,14 +790,16 @@ function Studio() {
               attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>'
               url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
             />
-            <GeoJSON key={layerKey} data={studioGeojson} style={styleFeature} onEachFeature={bindFeature} />
+            {simdGeojson && <GeoJSON key={layerKey} data={simdGeojson} style={styleFeature} onEachFeature={bindFeature} />}
           </MapContainer>
         </div>
 
         <div className="studio-bottom-grid">
           <section className="legend-panel" aria-label="Choropleth legend">
             <h3>Legend</h3>
-            <p>{method}, {classes} classes, {metrics[metric].unit}</p>
+            <p>
+              {method}, {classCount} classes. Display values are deprivation intensity: higher means more deprived.
+            </p>
             <div className="legend-list">
               {legend.map((item) => (
                 <div className="legend-row" key={item.label}>
@@ -730,15 +811,33 @@ function Studio() {
             </div>
           </section>
 
-          <section className="reading-panel" aria-label="Selected district reading">
+          <section className="reading-panel" aria-label="Selected data zone reading">
             <p className="eyebrow">Current reading</p>
-            <h3>{activeFeature.properties._atlasName}</h3>
-            <p>
-              {activeValue} / 100, class {activeClass} of {classes}. Dataset range: {minValue}-{maxValue}.
-            </p>
-            <p className="prompt-text">{metrics[metric].prompt}</p>
-            <p>{layerNote}</p>
+            {activeFeature ? (
+              <>
+                <h3>{getDatazoneName(activeFeature)}</h3>
+                <p>
+                  {variable.label}: {formatNumber(getOriginalValue(activeFeature, variableKey))}. Display range:{" "}
+                  {formatNumber(minValue)}-{formatNumber(maxValue)}.
+                </p>
+                <p className="prompt-text">{getInterpretation(activeFeature)}</p>
+              </>
+            ) : (
+              <p>Load the Glasgow SIMD layer to inspect a data zone.</p>
+            )}
           </section>
+        </div>
+
+        <div className="data-note">
+          <strong>Data note</strong>
+          <p>
+            SIMD is a relative, area-based measure of deprivation. It identifies concentrations of deprivation in data
+            zones, not whether every individual in an area is deprived.
+          </p>
+          <p>
+            Data source: Scottish Government, Scottish Index of Multiple Deprivation 2020v2. Contains Ordnance Survey
+            data © Crown copyright and database right. Used under the Open Government Licence.
+          </p>
         </div>
       </section>
 
@@ -749,10 +848,10 @@ function Studio() {
         </div>
 
         <SegmentedControl
-          label="Illustrative teaching variable"
-          value={metric}
-          onChange={setMetric}
-          options={Object.entries(metrics).map(([value, config]) => ({ value, label: config.short }))}
+          label="Mapped variable"
+          value={variableKey}
+          onChange={setVariableKey}
+          options={Object.entries(simdVariables).map(([value, config]) => ({ value, label: config.short }))}
         />
 
         <SegmentedControl
@@ -772,17 +871,14 @@ function Studio() {
           )}
         />
 
-        <SegmentedControl
-          label="Classification"
-          value={method}
-          onChange={setMethod}
-          options={Object.keys(classificationMethods)}
-        />
+        <SegmentedControl label="Classification" value={method} onChange={setMethod} options={availableMethods} />
 
-        <label className="range-control">
-          <span>Number of classes: {classes}</span>
-          <input type="range" min="3" max="5" value={classes} onChange={(event) => setClasses(Number(event.target.value))} />
-        </label>
+        {method !== "Official quintile" && method !== "Decile" && (
+          <label className="range-control">
+            <span>Number of classes: {classes}</span>
+            <input type="range" min="3" max="7" value={classes} onChange={(event) => setClasses(Number(event.target.value))} />
+          </label>
+        )}
 
         <label className="range-control">
           <span>Layer opacity: {Math.round(opacity * 100)}%</span>
@@ -798,8 +894,13 @@ function Studio() {
 
         <label className="toggle">
           <input type="checkbox" checked={labels} onChange={(event) => setLabels(event.target.checked)} />
-          <span>Show district labels</span>
+          <span>Show data zone labels</span>
         </label>
+
+        <div className="method-note">
+          <strong>{variable.label}</strong>
+          <p>{variable.description}</p>
+        </div>
 
         <div className="method-note">
           <strong>Classification note</strong>
@@ -811,12 +912,13 @@ function Studio() {
           <p>{palettes[palette].note}</p>
         </div>
 
-        <div className="reflection-box">
-          <strong>Studio prompt</strong>
-          <p>
-            Change one setting, then state what became more visible, what became less visible, and whether the map
-            still supports a defensible geographic claim.
-          </p>
+        <div className="reasoning-panel">
+          <strong>Reasoning prompts</strong>
+          <ul>
+            {reasoningPrompts.map((prompt) => (
+              <li key={prompt}>{prompt}</li>
+            ))}
+          </ul>
         </div>
       </aside>
     </main>
@@ -1033,10 +1135,6 @@ function About() {
   );
 }
 
-/*
- * The block below is intentionally kept small: the app is a static teaching
- * product, so page changes are handled by local React state instead of routing.
- */
 function App() {
   const [active, setActive] = useState("home");
 

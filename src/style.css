@@ -518,6 +518,16 @@ p {
   font-size: 0.93rem;
 }
 
+.map-alert {
+  margin-top: 16px;
+  border: 1px solid #f3b4a1;
+  border-radius: var(--radius);
+  padding: 14px;
+  background: #fff4ef;
+  color: #8a3217;
+  font-weight: 800;
+}
+
 .muted-pill {
   background: #f8faf9;
   border: 1px solid var(--line);
@@ -652,6 +662,18 @@ p {
   font-weight: 700;
 }
 
+.data-note {
+  margin-top: 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 16px;
+  background: #f8faf9;
+}
+
+.data-note p:last-child {
+  margin-bottom: 0;
+}
+
 .control-panel {
   position: sticky;
   top: 92px;
@@ -755,6 +777,26 @@ input[type="range"] {
 
 .reflection-box p {
   color: #dce8e6;
+}
+
+.reasoning-panel {
+  border-radius: var(--radius);
+  padding: 16px;
+  background: var(--accent-dark);
+  color: white;
+}
+
+.reasoning-panel ul {
+  margin: 10px 0 0;
+  padding-left: 18px;
+}
+
+.reasoning-panel li {
+  color: #dce8e6;
+}
+
+.reasoning-panel li + li {
+  margin-top: 8px;
 }
 
 .prompt-card {
