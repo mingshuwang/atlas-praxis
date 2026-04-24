@@ -85,4 +85,4 @@ From map to featured graphic:
 
 ## Adaptation
 
-Instructors can adapt the public copy, bundled data, or activity prompts for other geomatics topics as long as the app remains static. Suggested extensions include a second demonstration dataset, a side-by-side comparison mode, or a printable worksheet generated from the existing critique framework.
+Instructors can adapt the public copy, bundled data, or activity prompts for other geomatics topics as long as the app remains static. Suggested extensions include a second sample teaching dataset, a side-by-side comparison mode, or a printable worksheet generated from the existing critique framework.

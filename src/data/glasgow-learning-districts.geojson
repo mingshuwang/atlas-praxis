@@ -1,6 +1,6 @@
 {
   "type": "FeatureCollection",
-  "name": "Glasgow learning districts demonstration dataset",
+  "name": "Glasgow learning districts sample teaching dataset",
   "features": [
     {"type":"Feature","properties":{"id":"west","name":"West End","short":"West","accessibility":82,"density":64,"green":74,"uncertainty":32},"geometry":{"type":"Polygon","coordinates":[[[-4.33,55.875],[-4.285,55.895],[-4.255,55.885],[-4.265,55.855],[-4.315,55.845],[-4.33,55.875]]]}},
     {"type":"Feature","properties":{"id":"north","name":"North Glasgow","short":"North","accessibility":58,"density":55,"green":49,"uncertainty":61},"geometry":{"type":"Polygon","coordinates":[[[-4.28,55.905],[-4.215,55.902],[-4.195,55.878],[-4.235,55.862],[-4.255,55.885],[-4.28,55.905]]]}},

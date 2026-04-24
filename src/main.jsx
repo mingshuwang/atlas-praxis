@@ -3,6 +3,7 @@ import { createRoot } from "react-dom/client";
 import {
   BookOpen,
   CheckCircle2,
+  ExternalLink,
   Eye,
   Layers,
   Map,
@@ -58,8 +59,10 @@ const metrics = {
 const pages = [
   ["home", "Home"],
   ["studio", "Studio"],
+  ["tutorials", "Tutorials"],
   ["critique", "Critique"],
   ["featured", "Featured Graphics"],
+  ["cases", "Case Studies"],
   ["about", "About"],
 ];
 
@@ -89,6 +92,31 @@ const classroomActivities = [
   },
 ];
 
+const tutorials = [
+  {
+    title: "Map critique and cartographic design principles",
+    summary:
+      "Students read the Ordnance Survey cartographic design principles and apply lecture concepts to critique a map or geovisualisation.",
+    tasks: [
+      "Identify three things the map does very well.",
+      "Identify three suggestions for improvement.",
+      "Share and present the critique with the class.",
+    ],
+  },
+  {
+    title: "Bivariate mapping and cartograms",
+    summary:
+      "This tutorial introduces bivariate mapping and cartograms as advanced methods for visualising relationships and reshaping geographic representation.",
+    tasks: [
+      "Bivariate mapping: classify two variables into quantiles and assign colour combinations.",
+      "Cartograms: resize or distort geographic regions according to a selected variable such as population.",
+      "Compare how a conventional population gradient map and a population cartogram change interpretation.",
+    ],
+    note:
+      "The bivariate mapping activity explores the relationship between per-capita new construction area and per-capita demolition area in Greater London.",
+  },
+];
+
 const critiqueFramework = [
   ["Representation", "What data, geography, scale, and classification choices define the map's version of reality?"],
   ["Perception", "How do colour, contrast, symbols, labels, and layout guide attention?"],
@@ -97,12 +125,45 @@ const critiqueFramework = [
   ["Communication", "Does the graphic make one clear geographic argument for its intended audience?"],
 ];
 
+const featuredFramework = [
+  ["Clear visual argument", "The graphic makes one geographic claim visible and memorable."],
+  ["Appropriate data and method", "The dataset, classification, and visual technique fit the question."],
+  ["Cartographic design quality", "Colour, hierarchy, typography, layout, and annotation support interpretation."],
+  ["User-centred interpretation", "The intended audience can read the pattern without specialist explanation."],
+  ["Critical reflection", "Uncertainty, limitations, omissions, and ethical implications are acknowledged."],
+  ["Presentation readiness", "The takeaway can be explained clearly in a short spoken presentation."],
+];
+
 const featuredChecklist = [
   "The title states a geographic claim rather than only naming a variable.",
   "The classification and colour choices support the intended interpretation.",
   "The map hierarchy leads from pattern to explanation.",
   "Annotations clarify exceptions, uncertainty, or important local context.",
   "The final takeaway is concise enough for a short presentation.",
+];
+
+const caseStudies = [
+  {
+    title: "Construction enthusiasts versus demolition giants",
+    theme: "Bivariate mapping, building footprints, construction and demolition, England.",
+    summary:
+      "This featured graphic uses building footprint data to identify newly constructed and demolished buildings from 2017 to 2023 and visualises construction/demolition patterns through bivariate colour mapping.",
+    doi: "10.1177/23998083251317573",
+  },
+  {
+    title: "Scotland's twin referendums",
+    theme: "Bivariate population-weighted cartogram, electoral geography, Scotland.",
+    summary:
+      "This regional graphic compares Scotland's 2014 independence referendum and 2016 EU referendum using a bivariate population-weighted cartogram, showing how national aggregates can hide regional political heterogeneity.",
+    doi: "10.1080/21681376.2026.2637381",
+  },
+  {
+    title: "An Academy of Nations?",
+    theme: "Proportional-symbol cartogram, cultural geography, global cinema.",
+    summary:
+      "This featured graphic maps nominations and wins for the Academy Award for Best International Feature Film, using proportional symbols and colour intensity to reveal geographic imbalance and Eurocentrism.",
+    doi: "10.1177/23998083251381497",
+  },
 ];
 
 function valuesFor(metric) {
@@ -262,7 +323,7 @@ function Home({ setActive }) {
         <SectionHeader
           eyebrow="Course integration"
           title="Connected to GEOG5026 Visualisation & Map Use."
-          text="Developed in connection with postgraduate teaching at the University of Glasgow, the studio foregrounds applied map design, geographic information visualisation, map use, visual perception, map-user evaluation, map critique, and featured graphics."
+          text="Developed in connection with GEOG5026 Visualisation & Map Use at the University of Glasgow, the course focuses on applied map design, geographic information visualisation, map use, visual perception, critical analysis of geospatial representation, map-user evaluation, map production, and oral discussion of cartographic issues."
         />
       </section>
 
@@ -374,7 +435,7 @@ function Studio() {
         <svg viewBox="0 0 780 460" className="map-svg" role="img" aria-label="Interactive choropleth map of Glasgow learning districts">
           <rect x="0" y="0" width="780" height="460" className="map-bg" />
           <path d="M42 332 C 150 284, 232 312, 344 270 S 560 216, 725 118" className="river" />
-          <text x="46" y="54" className="map-context-label">Glasgow teaching geography, demonstration data</text>
+          <text x="46" y="54" className="map-context-label">Glasgow teaching geography, sample teaching data</text>
           {geojson.features.map((feature) => {
             const p = feature.properties;
             const isSelected = selected === p.id;
@@ -516,6 +577,33 @@ function Studio() {
   );
 }
 
+function Tutorials() {
+  return (
+    <main className="page">
+      <SectionHeader
+        eyebrow="Tutorials"
+        title="Guided activities for map critique and advanced representation."
+        text="The tutorials translate course themes into concise classroom tasks. They avoid private files and focus on public teaching concepts that can be reused in other geomatics settings."
+      />
+      <section className="tutorial-grid" aria-label="Tutorial activities">
+        {tutorials.map((tutorial, index) => (
+          <article className="tutorial-card" key={tutorial.title}>
+            <div className="card-kicker">Tutorial {index + 1}</div>
+            <h3>{tutorial.title}</h3>
+            <p>{tutorial.summary}</p>
+            <ul>
+              {tutorial.tasks.map((task) => (
+                <li key={task}>{task}</li>
+              ))}
+            </ul>
+            {tutorial.note && <p className="note-text">{tutorial.note}</p>}
+          </article>
+        ))}
+      </section>
+    </main>
+  );
+}
+
 function Critique() {
   return (
     <main className="page two-column">
@@ -547,39 +635,82 @@ function Critique() {
 
 function FeaturedGraphics() {
   return (
-    <main className="page featured-layout">
-      <section className="feature-poster">
-        <p className="eyebrow">Featured graphics</p>
-        <h2>From map exploration to a presentation-ready geographic visual.</h2>
-        <div className="poster-box">
-          <div className="poster-map" aria-hidden="true">
-            <Map size={72} />
+    <main className="page">
+      <section className="featured-layout">
+        <div className="feature-poster">
+          <p className="eyebrow">Featured graphics</p>
+          <h2>From map exploration to a presentation-ready geographic visual.</h2>
+          <div className="poster-box">
+            <div className="poster-map" aria-hidden="true">
+              <Map size={72} />
+            </div>
+            <div>
+              <h3>Make one defensible claim visible.</h3>
+              <p>
+                Start with the Studio, test alternative encodings, choose the clearest interpretation, and refine the
+                output into a graphic that can support short oral discussion.
+              </p>
+            </div>
           </div>
-          <div>
-            <h3>Make one defensible claim visible.</h3>
-            <p>
-              Start with the Studio, test alternative encodings, choose the clearest interpretation, and refine the
-              output into a graphic that can support short oral discussion.
-            </p>
+          <div className="featured-steps" aria-label="Featured graphics workflow">
+            {["Explore the pattern", "Choose the claim", "Refine hierarchy", "Add context", "Present the takeaway"].map((step) => (
+              <span key={step}>{step}</span>
+            ))}
           </div>
         </div>
-        <div className="featured-steps" aria-label="Featured graphics workflow">
-          {["Explore the pattern", "Choose the claim", "Refine hierarchy", "Add context", "Present the takeaway"].map((step) => (
-            <span key={step}>{step}</span>
+        <aside className="checklist">
+          <h3>Publication checklist</h3>
+          {featuredChecklist.map((item) => (
+            <label key={item}>
+              <input type="checkbox" /> {item}
+            </label>
+          ))}
+          <button className="secondary" onClick={() => window.print()}>
+            Print Page
+          </button>
+        </aside>
+      </section>
+
+      <section className="section-block">
+        <SectionHeader
+          eyebrow="Teaching framework"
+          title="From map to featured graphic."
+          text="This framework supports discussion, comparison, and revision as students turn an exploratory map into a communicative graphic."
+        />
+        <div className="framework-grid">
+          {featuredFramework.map(([title, text]) => (
+            <article className="framework-card" key={title}>
+              <h3>{title}</h3>
+              <p>{text}</p>
+            </article>
           ))}
         </div>
       </section>
-      <aside className="checklist">
-        <h3>Publication checklist</h3>
-        {featuredChecklist.map((item) => (
-          <label key={item}>
-            <input type="checkbox" /> {item}
-          </label>
+    </main>
+  );
+}
+
+function CaseStudies() {
+  return (
+    <main className="page">
+      <SectionHeader
+        eyebrow="Case studies"
+        title="Citation-style examples for featured graphics discussion."
+        text="These cards point students toward published examples without embedding PDFs, screenshots, or third-party copyrighted figures."
+      />
+      <section className="case-grid" aria-label="Featured graphics case studies">
+        {caseStudies.map((study, index) => (
+          <article className="case-card" key={study.doi}>
+            <div className="card-kicker">Case Study {String.fromCharCode(65 + index)}</div>
+            <h3>{study.title}</h3>
+            <p className="theme-text">{study.theme}</p>
+            <p>{study.summary}</p>
+            <a href={`https://doi.org/${study.doi}`} target="_blank" rel="noreferrer">
+              DOI: {study.doi} <ExternalLink size={15} aria-hidden="true" />
+            </a>
+          </article>
         ))}
-        <button className="secondary" onClick={() => window.print()}>
-          Print Page
-        </button>
-      </aside>
+      </section>
     </main>
   );
 }
@@ -593,16 +724,16 @@ function About() {
         <p>
           Atlas Praxis is developed in connection with GEOG5026 Visualisation & Map Use at the University of Glasgow.
           It supports applied map design, geographic information visualisation, map use, visual perception, critique,
-          and featured-graphics communication.
+          map production, and featured-graphics communication.
         </p>
         <p className="about-note">
-          Project note: early development has also been shaped by CATCON 9 evaluation and open cartographic education
-          goals.
+          Current release: a browser-based studio with bundled teaching data, static pages, and reusable classroom
+          frameworks for visual reasoning.
         </p>
       </section>
       <section className="roadmap">
         <Feature icon={<BookOpen />} title="Teaching alignment" text="Supports visual perception, representation, interpretation, user evaluation, critique, and oral discussion." />
-        <Feature icon={<Layers />} title="Portable implementation" text="Runs as a static React/Vite application with bundled demonstration data and no map token." />
+        <Feature icon={<Layers />} title="Portable implementation" text="Runs as a static React/Vite application with bundled sample teaching data and no map token." />
         <Feature icon={<Route />} title="Learning pathway" text="Guides learners from observing a pattern to modifying a design, critiquing the result, and communicating a claim." />
         <Feature icon={<Palette />} title="Roadmap" text="Next modules: comparison mode, printable instructor materials, web mapping labs, and geodatabase design exercises." />
       </section>
@@ -610,6 +741,10 @@ function About() {
   );
 }
 
+/*
+ * The block below is intentionally kept small: the app is a static teaching
+ * product, so page changes are handled by local React state instead of routing.
+ */
 function App() {
   const [active, setActive] = useState("home");
 
@@ -618,8 +753,10 @@ function App() {
       <Header active={active} setActive={setActive} />
       {active === "home" && <Home setActive={setActive} />}
       {active === "studio" && <Studio />}
+      {active === "tutorials" && <Tutorials />}
       {active === "critique" && <Critique />}
       {active === "featured" && <FeaturedGraphics />}
+      {active === "cases" && <CaseStudies />}
       {active === "about" && <About />}
       <footer>Atlas Praxis | Open geomatics teaching studio | University of Glasgow</footer>
     </div>

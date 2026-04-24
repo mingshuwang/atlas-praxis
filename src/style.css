@@ -184,6 +184,9 @@ input:focus-visible,
 .reading-panel,
 .pathway-card,
 .activity-card,
+.tutorial-card,
+.framework-card,
+.case-card,
 .course-band {
   background: rgba(255, 255, 255, 0.96);
   border: 1px solid var(--line);
@@ -286,14 +289,33 @@ p {
 }
 
 .pathway-grid,
-.activity-grid {
+.activity-grid,
+.framework-grid,
+.case-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 14px;
 }
 
+.tutorial-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.case-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.framework-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
 .pathway-card,
-.activity-card {
+.activity-card,
+.tutorial-card,
+.framework-card,
+.case-card {
   padding: 18px;
 }
 
@@ -323,6 +345,52 @@ p {
 
 .activity-card svg {
   color: var(--accent);
+}
+
+.tutorial-card ul {
+  margin: 14px 0 0;
+  padding-left: 20px;
+  color: #354453;
+}
+
+.tutorial-card li + li {
+  margin-top: 8px;
+}
+
+.card-kicker {
+  margin-bottom: 12px;
+  color: var(--warm);
+  font-size: 0.8rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.note-text {
+  margin-top: 16px;
+  padding: 12px;
+  border-left: 4px solid var(--accent);
+  background: #f8faf9;
+  color: var(--accent-dark);
+  font-weight: 700;
+}
+
+.theme-text {
+  color: var(--accent-dark);
+  font-weight: 800;
+}
+
+.case-card a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 12px;
+  color: var(--accent-dark);
+  font-weight: 900;
+  text-decoration: none;
+}
+
+.case-card a:hover {
+  text-decoration: underline;
 }
 
 .course-band {
@@ -684,7 +752,10 @@ footer {
   .studio-bottom-grid,
   .poster-box,
   .pathway-grid,
-  .activity-grid {
+  .activity-grid,
+  .tutorial-grid,
+  .framework-grid,
+  .case-grid {
     grid-template-columns: 1fr;
   }
 
