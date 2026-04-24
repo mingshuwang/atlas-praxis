@@ -1,0 +1,14 @@
+{
+  "type": "FeatureCollection",
+  "name": "Glasgow learning districts demonstration dataset",
+  "features": [
+    {"type":"Feature","properties":{"id":"west","name":"West End","short":"West","accessibility":82,"density":64,"green":74,"uncertainty":32},"geometry":{"type":"Polygon","coordinates":[[[-4.33,55.875],[-4.285,55.895],[-4.255,55.885],[-4.265,55.855],[-4.315,55.845],[-4.33,55.875]]]}},
+    {"type":"Feature","properties":{"id":"north","name":"North Glasgow","short":"North","accessibility":58,"density":55,"green":49,"uncertainty":61},"geometry":{"type":"Polygon","coordinates":[[[-4.28,55.905],[-4.215,55.902],[-4.195,55.878],[-4.235,55.862],[-4.255,55.885],[-4.28,55.905]]]}},
+    {"type":"Feature","properties":{"id":"centre","name":"City Centre","short":"Centre","accessibility":95,"density":92,"green":28,"uncertainty":24},"geometry":{"type":"Polygon","coordinates":[[[-4.265,55.865],[-4.235,55.862],[-4.218,55.848],[-4.245,55.837],[-4.285,55.844],[-4.265,55.865]]]}},
+    {"type":"Feature","properties":{"id":"east","name":"East End","short":"East","accessibility":67,"density":61,"green":41,"uncertainty":56},"geometry":{"type":"Polygon","coordinates":[[[-4.218,55.878],[-4.17,55.875],[-4.165,55.84],[-4.218,55.848],[-4.235,55.862],[-4.218,55.878]]]}},
+    {"type":"Feature","properties":{"id":"south","name":"Southside","short":"South","accessibility":74,"density":69,"green":62,"uncertainty":43},"geometry":{"type":"Polygon","coordinates":[[[-4.31,55.842],[-4.285,55.844],[-4.245,55.837],[-4.225,55.815],[-4.29,55.818],[-4.335,55.83],[-4.31,55.842]]]}},
+    {"type":"Feature","properties":{"id":"clyde","name":"Clyde Waterfront","short":"Clyde","accessibility":71,"density":77,"green":35,"uncertainty":48},"geometry":{"type":"Polygon","coordinates":[[[-4.325,55.855],[-4.285,55.844],[-4.245,55.837],[-4.218,55.848],[-4.23,55.858],[-4.285,55.868],[-4.325,55.855]]]}},
+    {"type":"Feature","properties":{"id":"university","name":"University Quarter","short":"Uni","accessibility":88,"density":72,"green":69,"uncertainty":29},"geometry":{"type":"Polygon","coordinates":[[[-4.305,55.884],[-4.275,55.889],[-4.255,55.875],[-4.265,55.855],[-4.305,55.858],[-4.305,55.884]]]}},
+    {"type":"Feature","properties":{"id":"merchant","name":"Merchant City","short":"Merc","accessibility":91,"density":86,"green":31,"uncertainty":27},"geometry":{"type":"Polygon","coordinates":[[[-4.245,55.865],[-4.218,55.848],[-4.19,55.846],[-4.18,55.862],[-4.213,55.874],[-4.245,55.865]]]}}
+  ]
+}
