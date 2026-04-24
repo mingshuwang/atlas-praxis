@@ -166,7 +166,6 @@ const maintainerLinks = {
 const pages = [
   ["home", "Home"],
   ["studio", "Studio"],
-  ["tutorials", "Tutorials"],
   ["concepts", "Concepts"],
   ["critique", "Critique"],
   ["featured", "Featured Graphics"],
@@ -200,35 +199,6 @@ const classroomActivities = [
   },
 ];
 
-const tutorials = [
-  {
-    title: "Map critique and cartographic design principles",
-    summary:
-      "Students read the Ordnance Survey cartographic design principles and apply lecture concepts to critique a map or geovisualisation.",
-    link: "https://proceedings.esri.com/library/userconf/proc13/papers/1015_20.pdf",
-    tasks: [
-      "Read the Ordnance Survey cartographic design principles.",
-      "Apply lecture concepts and OS principles to critique a map or geovisualisation.",
-      "Identify three things the map does very well.",
-      "Identify three suggestions for improvement.",
-      "Share and present the critique with the class.",
-    ],
-  },
-  {
-    title: "Bivariate mapping and cartograms",
-    summary:
-      "This tutorial introduces bivariate mapping and cartograms as advanced methods for visualising relationships and reshaping geographic representation.",
-    tasks: [
-      "Bivariate mapping: classify two variables into quantiles and assign colour combinations.",
-      "Use colour combinations to read where both variables are high, both are low, or the relationship is uneven.",
-      "Cartograms: resize or distort geographic regions according to a selected variable such as population.",
-      "Compare how a conventional population gradient map and a population cartogram change interpretation.",
-    ],
-    note:
-      "The bivariate mapping activity explores the relationship between per-capita new construction area and per-capita demolition area in Greater London.",
-  },
-];
-
 const concepts = [
   {
     title: "Map communication",
@@ -257,6 +227,10 @@ const concepts = [
   {
     title: "Interaction",
     text: "Interactive maps extend visual reasoning through navigation, filtering, linking, and brushing. Interaction should reveal structure without forcing users to hunt for the main interpretation.",
+  },
+  {
+    title: "Bivariate maps and cartograms",
+    text: "Bivariate maps combine two variables in one map by classifying each variable and assigning colour combinations. Cartograms deliberately distort geographic area according to a selected variable, making representation itself part of the argument. Both methods help students ask how visual form changes interpretation.",
   },
 ];
 
@@ -947,38 +921,6 @@ function Studio() {
   );
 }
 
-function Tutorials() {
-  return (
-    <main className="page">
-      <SectionHeader
-        eyebrow="Tutorials"
-        title="Guided activities for map critique and advanced representation."
-        text="The tutorials translate course themes into concise classroom tasks. They avoid private files and focus on public teaching concepts that can be reused in other geomatics settings."
-      />
-      <section className="tutorial-grid" aria-label="Tutorial activities">
-        {tutorials.map((tutorial, index) => (
-          <article className="tutorial-card" key={tutorial.title}>
-            <div className="card-kicker">Tutorial {index + 1}</div>
-            <h3>{tutorial.title}</h3>
-            <p>{tutorial.summary}</p>
-            <ul>
-              {tutorial.tasks.map((task) => (
-                <li key={task}>{task}</li>
-              ))}
-            </ul>
-            {tutorial.note && <p className="note-text">{tutorial.note}</p>}
-            {tutorial.link && (
-              <a className="inline-link" href={tutorial.link} target="_blank" rel="noreferrer">
-                Read the OS principles <ExternalLink size={15} aria-hidden="true" />
-              </a>
-            )}
-          </article>
-        ))}
-      </section>
-    </main>
-  );
-}
-
 function Concepts() {
   return (
     <main className="page">
@@ -1001,28 +943,46 @@ function Concepts() {
 
 function Critique() {
   return (
-    <main className="page two-column">
-      <section className="intro-panel compact">
-        <p className="eyebrow">Critique framework</p>
-        <h2>From looking at maps to reasoning with maps.</h2>
-        <p>
-          The framework helps students evaluate a map as a designed argument. It can be used during peer review,
-          seminar discussion, or revision of a geographic visual.
-        </p>
-        <div className="button-row">
-          <button className="secondary" onClick={() => window.print()}>
-            Print Framework
-          </button>
+    <main className="page">
+      <section className="two-column">
+        <div className="intro-panel compact">
+          <p className="eyebrow">Critique framework</p>
+          <h2>From looking at maps to reasoning with maps.</h2>
+          <p>
+            The framework helps students evaluate a map as a designed argument. It can be used during peer review,
+            seminar discussion, or revision of a geographic visual.
+          </p>
+          <div className="button-row">
+            <button className="secondary" onClick={() => window.print()}>
+              Print Framework
+            </button>
+          </div>
+        </div>
+        <div className="prompt-list">
+          {critiqueFramework.map(([title, text], idx) => (
+            <article className="prompt-card" key={title}>
+              <span>{String(idx + 1).padStart(2, "0")}</span>
+              <h3>{title}</h3>
+              <p>{text}</p>
+            </article>
+          ))}
         </div>
       </section>
-      <section className="prompt-list">
-        {critiqueFramework.map(([title, text], idx) => (
-          <article className="prompt-card" key={title}>
-            <span>{String(idx + 1).padStart(2, "0")}</span>
-            <h3>{title}</h3>
-            <p>{text}</p>
-          </article>
-        ))}
+
+      <section className="section-block publication-panel">
+        <SectionHeader
+          eyebrow="Critique activity"
+          title="Three strengths, three improvements."
+          text="Apply visual reasoning concepts and cartographic design principles to a map or geovisualisation. Identify three things the map does well and three suggestions for improvement, then discuss how the design choices affect user interpretation."
+        />
+        <a
+          className="inline-link"
+          href="https://proceedings.esri.com/library/userconf/proc13/papers/1015_20.pdf"
+          target="_blank"
+          rel="noreferrer"
+        >
+          Read the Ordnance Survey cartographic design principles <ExternalLink size={15} aria-hidden="true" />
+        </a>
       </section>
     </main>
   );
@@ -1198,7 +1158,6 @@ function App() {
       <Header active={active} setActive={setActive} />
       {active === "home" && <Home setActive={setActive} />}
       {active === "studio" && <Studio />}
-      {active === "tutorials" && <Tutorials />}
       {active === "concepts" && <Concepts />}
       {active === "critique" && <Critique />}
       {active === "featured" && <FeaturedGraphics />}

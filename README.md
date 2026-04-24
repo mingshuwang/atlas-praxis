@@ -21,9 +21,8 @@ Atlas Praxis is an open teaching studio and should not be described as an offici
 
 - Home: product overview, learning pathway, course integration, and classroom activities.
 - Studio: Leaflet map studio centred on Glasgow with OpenStreetMap tiles, attribution, Glasgow SIMD 2020v2 data zones, deprivation-rank handling, palette notes, and classification notes.
-- Tutorials: guided activities on OS cartographic design principles, map critique, bivariate mapping, quantile classification, colour combinations, and cartograms.
-- Concepts: public teaching notes on map communication, visual perception, geovisualisation, data structure, visualisation purpose, and interaction.
-- Critique: five-part framework covering Representation, Perception, Interpretation, Ethics, and Communication.
+- Concepts: public teaching notes on map communication, visual perception, geovisualisation, data structure, visualisation purpose, interaction, bivariate mapping, and cartograms.
+- Critique: five-part framework covering Representation, Perception, Interpretation, Ethics, and Communication, plus a concise map critique activity.
 - Featured Graphics: learning model for moving from map exploration to publication-style visual explanation.
 - Case Studies: DOI-linked teaching cards with local open-access PDFs and prompts for reading featured graphics.
 - About: course connection, implementation notes, and roadmap.

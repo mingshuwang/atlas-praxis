@@ -184,7 +184,6 @@ input:focus-visible,
 .reading-panel,
 .pathway-card,
 .activity-card,
-.tutorial-card,
 .concept-card,
 .framework-card,
 .case-card,
@@ -300,12 +299,6 @@ p {
   gap: 14px;
 }
 
-.tutorial-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16px;
-}
-
 .case-grid {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
@@ -320,7 +313,6 @@ p {
 
 .pathway-card,
 .activity-card,
-.tutorial-card,
 .concept-card,
 .framework-card,
 .case-card,
@@ -356,20 +348,10 @@ p {
   color: var(--accent);
 }
 
-.tutorial-card ul {
-  margin: 14px 0 0;
-  padding-left: 20px;
-  color: #354453;
-}
-
 .concept-card p,
 .framework-card p,
 .case-card p {
   margin-bottom: 0;
-}
-
-.tutorial-card li + li {
-  margin-top: 8px;
 }
 
 .card-kicker {
@@ -924,7 +906,6 @@ footer {
   .poster-box,
   .pathway-grid,
   .activity-grid,
-  .tutorial-grid,
   .concept-grid,
   .framework-grid,
   .case-grid {
