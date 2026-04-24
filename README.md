@@ -13,7 +13,9 @@ Atlas Praxis supports postgraduate geomatics teaching through a studio cycle:
 - Critique representation, perception, interpretation, ethics, and communication.
 - Communicate exploratory findings as concise featured graphics.
 
-The teaching content is developed in connection with GEOG5026 Visualisation & Map Use at the University of Glasgow. The course focuses on applied map design, geographic information visualisation, map use, visual perception, critical analysis of geospatial representation, map-user evaluation, map production, and oral discussion of cartographic issues.
+Atlas Praxis is developed in connection with postgraduate teaching at the University of Glasgow, including [GEOG5026 Visualisation & Map Use](https://www.gla.ac.uk/coursecatalogue/course/?code=GEOG5026). The course focuses on applied map design, geographic information visualisation, map use, visual perception, critical analysis of geospatial representation, map-user evaluation, map production, and oral discussion of cartographic issues.
+
+Atlas Praxis is an open teaching studio and should not be described as an official University of Glasgow platform.
 
 ## Pages And Features
 
@@ -65,7 +67,22 @@ https://tile.openstreetmap.org/{z}/{x}/{y}.png
 
 No Mapbox token or paid map service is used.
 
-Data source: Scottish Government, Scottish Index of Multiple Deprivation 2020v2. Contains Ordnance Survey data © Crown copyright and database right. Used under the Open Government Licence.
+## Teaching Use
+
+Atlas Praxis is designed for a 30-60 minute practical session. A typical activity asks students to explore the Visual Reasoning Studio, change mapped variables, classification methods, and colour palettes, respond to critique prompts, and translate their observations into a featured-graphics style visual argument.
+
+The core learning pathway is:
+
+- Observe mapped patterns and visual hierarchy.
+- Modify variables, classification, and palettes.
+- Critique representation, perception, interpretation, ethics, and communication.
+- Communicate a concise visual argument.
+
+## Data And Attribution
+
+The Visual Reasoning Studio uses Scottish Index of Multiple Deprivation (SIMD) 2020v2 data for Glasgow data zones. SIMD is a relative, area-based measure of deprivation and should not be interpreted as describing every individual within an area.
+
+Map tiles are provided by OpenStreetMap contributors. SIMD data are provided by the Scottish Government and contain Ordnance Survey data © Crown copyright and database right. Used under the Open Government Licence.
 
 ## Case Study Resources
 
@@ -131,20 +148,27 @@ See [docs/instructor-guide.md](docs/instructor-guide.md) for a 30-60 minute clas
 
 ## Roadmap
 
-- Add comparison mode for SIMD domains and alternative deprivation indicators.
-- Add side-by-side comparison of two map designs.
-- Add printable critique worksheets and instructor prompts.
-- Extend tutorials for web mapping, interaction, and mobile mapping.
-- Add static galleries of original teaching examples created for the project.
-- Add geodatabase and land administration teaching exercises.
+- Side-by-side map design comparison.
+- Exportable critique sheets.
+- Additional open teaching datasets.
+- Instructor activity templates.
+- Web/mobile mapping exercises.
+- Geospatial data infrastructure and land information design modules.
 
-## Citation And Contact
+## Citation And Acknowledgement
 
-If you use or adapt Atlas Praxis in teaching, cite the project as:
+If you use Atlas Praxis in teaching or workshops, please acknowledge:
 
-Wang, M. Atlas Praxis: an open geomatics teaching studio for visual reasoning. University of Glasgow.
+Wang, M. Atlas Praxis: An Open Geomatics Studio for Visual Reasoning. University of Glasgow. https://atlas-praxis.mingshuwang.org/
 
-Contact: Dr Mingshu Wang, Reader in Geospatial Data Science, University of Glasgow.
+## Maintainer And Contact
+
+Dr Mingshu Wang  
+Reader in Geospatial Data Science  
+University of Glasgow  
+Email: Mingshu.Wang@glasgow.ac.uk  
+Personal website: https://mingshuwang.org  
+University profile: https://www.gla.ac.uk/schools/ges/staff/mingshuwang/
 
 ## License
 

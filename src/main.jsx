@@ -157,6 +157,12 @@ const reasoningPrompts = [
   "What are the risks of interpreting area-based deprivation as individual deprivation?",
 ];
 
+const courseCatalogueUrl = "https://www.gla.ac.uk/coursecatalogue/course/?code=GEOG5026";
+const maintainerLinks = {
+  personal: "https://mingshuwang.org",
+  profile: "https://www.gla.ac.uk/schools/ges/staff/mingshuwang/",
+};
+
 const pages = [
   ["home", "Home"],
   ["studio", "Studio"],
@@ -560,7 +566,18 @@ function Home({ setActive }) {
         <SectionHeader
           eyebrow="Course integration"
           title="Connected to GEOG5026 Visualisation & Map Use."
-          text="Developed in connection with GEOG5026 Visualisation & Map Use at the University of Glasgow, the course focuses on applied map design, geographic information visualisation, map use, visual perception, critical analysis of geospatial representation, map-user evaluation, map production, and oral discussion of cartographic issues."
+          text="Developed in connection with postgraduate teaching at the University of Glasgow, Atlas Praxis supports GEOG5026 Visualisation & Map Use. The course focuses on applied map design, geographic information visualisation, map use, visual perception, critical analysis of geospatial representation, map-user evaluation, map production, and oral discussion of cartographic issues."
+        />
+        <a className="inline-link" href={courseCatalogueUrl} target="_blank" rel="noreferrer">
+          View GEOG5026 course catalogue <ExternalLink size={15} aria-hidden="true" />
+        </a>
+      </section>
+
+      <section className="section-block course-band">
+        <SectionHeader
+          eyebrow="Teaching use"
+          title="Designed for a 30-60 minute practical session."
+          text="Students explore the Visual Reasoning Studio, change variables, classification methods, and palettes, respond to critique prompts, and translate observations into a featured-graphics style visual argument."
         />
       </section>
 
@@ -1121,20 +1138,53 @@ function About() {
         <p className="eyebrow">Open-source teaching software</p>
         <h2>Built for postgraduate geomatics education.</h2>
         <p>
-          Atlas Praxis is developed in connection with GEOG5026 Visualisation & Map Use at the University of Glasgow.
-          It supports applied map design, geographic information visualisation, map use, visual perception, critique,
-          map production, and featured-graphics communication.
+          Atlas Praxis is developed in connection with postgraduate teaching at the University of Glasgow, including
+          GEOG5026 Visualisation & Map Use. It is an open teaching studio, not an official University of Glasgow
+          platform.
         </p>
         <p className="about-note">
-          Current release: a browser-based studio with bundled teaching data, static pages, and reusable classroom
-          frameworks for visual reasoning.
+          Current release: a browser-based learning environment with a Glasgow SIMD visual reasoning studio, static
+          teaching pages, and reusable classroom frameworks.
         </p>
+        <div className="contact-card">
+          <h3>Maintainer</h3>
+          <p>
+            Dr Mingshu Wang<br />
+            Reader in Geospatial Data Science<br />
+            University of Glasgow
+          </p>
+          <div className="link-stack">
+            <a href="mailto:Mingshu.Wang@glasgow.ac.uk">Mingshu.Wang@glasgow.ac.uk</a>
+            <a href={maintainerLinks.personal} target="_blank" rel="noreferrer">
+              Personal website <ExternalLink size={15} aria-hidden="true" />
+            </a>
+            <a href={maintainerLinks.profile} target="_blank" rel="noreferrer">
+              University profile <ExternalLink size={15} aria-hidden="true" />
+            </a>
+            <a href={courseCatalogueUrl} target="_blank" rel="noreferrer">
+              GEOG5026 course catalogue <ExternalLink size={15} aria-hidden="true" />
+            </a>
+          </div>
+        </div>
+        <div className="contact-card">
+          <h3>Data and attribution</h3>
+          <p>
+            The Visual Reasoning Studio uses Scottish Index of Multiple Deprivation (SIMD) 2020v2 data for Glasgow
+            data zones. SIMD is a relative, area-based measure of deprivation and should not be interpreted as
+            describing every individual within an area.
+          </p>
+          <p>
+            Map tiles are provided by OpenStreetMap contributors. SIMD data are provided by the Scottish Government
+            and contain Ordnance Survey data © Crown copyright and database right. Used under the Open Government
+            Licence.
+          </p>
+        </div>
       </section>
       <section className="roadmap">
         <Feature icon={<BookOpen />} title="Teaching alignment" text="Supports visual perception, representation, interpretation, user evaluation, critique, and oral discussion." />
-        <Feature icon={<Layers />} title="Portable implementation" text="Runs as a static React/Vite application with bundled sample teaching data and no map token." />
+        <Feature icon={<Layers />} title="Data and attribution" text="Uses Glasgow SIMD 2020v2 data zones and OpenStreetMap tiles with visible attribution." />
         <Feature icon={<Route />} title="Learning pathway" text="Guides learners from observing a pattern to modifying a design, critiquing the result, and communicating a claim." />
-        <Feature icon={<Palette />} title="Roadmap" text="Next modules: comparison mode, printable instructor materials, web mapping labs, and geodatabase design exercises." />
+        <Feature icon={<Palette />} title="Roadmap" text="Next modules: side-by-side comparison, critique sheets, open teaching datasets, activity templates, and web/mobile mapping exercises." />
       </section>
     </main>
   );
